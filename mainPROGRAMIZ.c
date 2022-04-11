@@ -2,8 +2,9 @@
 
 #include <stdio.h>
 #include "djikstra.h"
+#include "input.h"
 
-#define MAX 10
+#define MAX 9999
 
 int main() {
   int Graph[MAX][MAX], i, j, n, u;
