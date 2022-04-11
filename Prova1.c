@@ -1,5 +1,4 @@
-//NON PROVATO, NON FUNZIONERÀ MAI. 
-
+//A quanto pare funziona 
 
 /****************************************************************
 1) APPLICARE ALGORITMO DI DIJKSTRA AD UN GRAFO CON 5 NODI ORIENTATO IN UN SOLO VERSO
@@ -23,20 +22,26 @@ nel punto 3 se avete problemi a farlo subito per qualsiasi grafo iniziate magari
 #include <wchar.h>
 #include <locale.h>
 #define MAX 9999
-void inizializza(int matrice[][MAX], int n);
-void default5(int matrice[][5]);
-void default10(int matrice[][10]);
-void custom(int matrice[][7]); // matrice di default a nodi variabili contiene 7 nodi
+void inizializza(size_t, size_t, int[*][*], int n);
+void default5(size_t, size_t, int[*][*]);
+void default10(size_t, size_t, int[*][*]);
+void custom(size_t, size_t, int[*][*]); // matrice di default a nodi variabili contiene 7 nodi
+void inserimento(size_t, size_t, int pesi[*][*], int nodi, int flag);
+void outputWindows(size_t, size_t, int pesi[*][*], int nodi);
+void outputLinux(size_t, size_t, int pesi[*][*], int nodi);
+
 int detect();
 
 int main()
 {
-    int mat5[5][5];          // matrice da riempire con i dati di default, in caso di input dell'utente sovrascrivre e inserire i dati.
-    int mat10[10][10];       // stessa cosa
-    int MATcustom[MAX][MAX]; // matrice con i dati inseriti dall'utente
+    setlocale( LC_ALL, "en_US.UTF-8" );
+    int mat5[5][5];      // matrice da riempire con i dati di default, in caso di input dell'utente sovrascrivre e inserire i dati.
+    int mat10[10][10];   // stessa cosa
+    int MATcustom[7][7]; // matrice con i dati inseriti dall'utente DA SISTEMARE< MAX è troppo grande
     int Grafo;
     int scelta;
     int nodi;
+    size_t c, r;
     do
     {
         wprintf(L"\t\t\t --- DIJSKTRA ---\n\n");
@@ -46,76 +51,42 @@ int main()
         switch (Grafo)
         {
         case 1:
+            c = 5, r = 5;
             wprintf(L"1)Grafo di Default\n2)Grafo con dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
             wprintf(L"Opzione: ");
             scanf("%d", &scelta);
             switch (scelta)
             {
             case 1:
-                default5(mat5);
+                default5(c, r, mat5);
                 // lancio funzione che fa dijkstra
                 break;
             case 2:
-                inizializza(mat5, 5);
-                if (detect() == 0)
-                {
-                    inserimentoWindows(mat5, 5);
-                }
-                else if (detect() == 1)
-                {
-                    inserimentoLinux(mat5, 5);
-                }
-                else
-                {
-                    wprintf(L"Sistema non supportato\n");
-                }
+                inizializza(c, r, mat5, 5);
+                inserimento(c, r, mat5, 5, 0);
                 // lancio funzione che fa dijkstra
                 break;
             case 3:
-                inizializza(mat5, 5);
-                if (detect() == 0)
-                {
-                    inserimentoWindows(mat5, 5);
-                }
-                else if (detect() == 1)
-                {
-                    inserimentoLinux(mat5, 5);
-                }
-                else
-                {
-                    wprintf(L"Sistema non supportato\n");
-                }
-                // lancio funzione che fa dijksra
-                // altri cammini minimi
-                break;
+                inizializza(c, r, mat5, 5);
+                inserimento(c, r, mat5, 5, 0);
             default:
                 wprintf(L"Scelta non valida, riprova\n\n");
                 break;
             }
         case 2:
+            c = 10, r = 10;
             wprintf(L"1)Grafo di Default\n2)Grafo con dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
             wprintf(L"Opzione: ");
             scanf("%d", &scelta);
             switch (scelta)
             {
             case 1:
-                default10(mat10);
+                default10(c, r, mat10);
                 // lancio funzione che fa dijkstra
                 break;
             case 2:
-                inizializza(mat10, 10);
-                if (detect() == 0)
-                {
-                    inserimentoWindows(mat10, 10);
-                }
-                else if (detect() == 1)
-                {
-                    inserimentoLinux(mat10, 10);
-                }
-                else
-                {
-                    wprintf(L"Sistema non supportato\n");
-                }
+                inizializza(c, r, mat10, 10);
+                inserimento(c, r, mat10, 10, 0);
                 // lancio funzione che fa dijkstra
                 break;
             case 3:
@@ -128,55 +99,36 @@ int main()
                 break;
             }
         case 3:
+            c = 7, r = 7;
             wprintf(L"1)Grafo di Default\n2)Grafo con dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
             wprintf(L"Opzione: ");
             scanf("%d", &scelta);
             switch (scelta)
             {
             case 1:
-                custom(MATcustom);
+                custom(c, r, MATcustom);
                 //  lancio funzione che fa dijkstra
                 break;
             case 2:
-                inizializza(MATcustom, MAX);
+                inizializza(c, r, MATcustom, MAX);
                 do
                 {
                     wprintf(L"Digita il numero di nodi");
                     scanf("%d", &nodi);
                 } while (nodi > 0);
-                if (detect() == 0)
-                {
-                    inserimentoWindows(MATcustom, nodi);
-                }
-                else if (detect() == 1)
-                {
-                    inserimentoLinux(MATcustom, nodi);
-                }
-                else
-                {
-                    wprintf(L"Sistema non supportato\n");
-                }
+                c = nodi, r = nodi; // c e r sono le dimensioni della matrice
+                inserimento(c, r, MATcustom, nodi, 0);
+
                 // lancio funzione che fa dijkstra
                 break;
             case 3:
-                inizializza(MATcustom, MAX);
+                inizializza(c, r, MATcustom, MAX);
                 do
                 {
                     wprintf(L"Digita il numero di nodi");
                     scanf("%d", &nodi);
                 } while (nodi > 0);
-                if (detect() == 0)
-                {
-                    inserimentoWindows(MATcustom, nodi);
-                }
-                else if (detect() == 1)
-                {
-                    inserimentoLinux(MATcustom, nodi);
-                }
-                else
-                {
-                    wprintf(L"Sistema non supportato\n");
-                }
+                inserimento(c, r, MATcustom, nodi, 1);
                 // lancio funzione che fa dijksra
                 // altri cammini minimi
                 break;
@@ -192,7 +144,7 @@ int main()
 /// FUNZIONI
 ///
 
-void inizializza(int matrice[][MAX], int n)
+void inizializza(size_t c, size_t r, int matrice[c][r], int n)
 {
     int i, j;
     for (i = 0; i < n; i++)
@@ -215,14 +167,16 @@ int detect() // C program to detect Operating System
 #endif
 }
 
-void inserimentoWindows(int pesi[][MAX], int nodi) // funzione per l'impot di una matrice nodi per nodi al momento statica
+void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funzione per l'impot di una matrice nodi per nodi al momento statica
 {
     setlocale(LC_ALL, "en_US.UTF-8");
     int i, j;
     int scelta;
-    wprintf(L"inserire numero nodi: ");
-    scanf("%d", &nodi);
-
+    if (flag == 1)
+    {
+        wprintf(L"inserire numero nodi: ");
+        scanf("%d", &nodi);
+    }
     for (i = 0; i < nodi; i++) // inizioalizzazione matrice pesi
     {
         for (j = 0; j < nodi; j++)
@@ -296,6 +250,22 @@ void inserimentoWindows(int pesi[][MAX], int nodi) // funzione per l'impot di un
         }
         break;
     }
+    if (detect() == 0)
+    {
+        outputWindows(c, r, pesi, nodi);
+    }
+    else if (detect() == 1)
+    {
+        outputLinux(c, r, pesi, nodi);
+    }
+    else
+    {
+        wprintf(L"Sistema non supportato\n");
+    }
+}
+void outputWindows(size_t c, size_t r, int pesi[c][r], int nodi)
+{
+    int i, j;
     for (i = 0; i < nodi; i++)
     {
         wprintf(L"\n");
@@ -312,87 +282,9 @@ void inserimentoWindows(int pesi[][MAX], int nodi) // funzione per l'impot di un
         }
     }
 }
-void inserimentoLinux(int pesi[][MAX], int nodi) // funzione per l'impot di una matrice nodi per nodi al momento statica
+void outputLinux(size_t c, size_t r, int pesi[c][r], int nodi)
 {
-    setlocale(LC_ALL, "en_US.UTF-8");
     int i, j;
-    int scelta;
-    wprintf(L"inserire numero nodi: ");
-    scanf("%d", &nodi);
-
-    for (i = 0; i < nodi; i++) // inizioalizzazione matrice pesi
-    {
-        for (j = 0; j < nodi; j++)
-        {
-            pesi[i][j] = MAX;
-        }
-    }
-    do
-    {
-        wprintf(L"il grafo è orientato?\n 1) si\n 2) no\n");
-        scanf("%d", &scelta);
-    } while (scelta != 1 && scelta != 2); // controllo input
-    switch (scelta)
-    {
-    case 1:
-        for (i = 0; i < nodi; i++) // input orientato
-        {
-            for (j = 0; j < nodi; j++)
-            {
-                if (i != j)
-                {
-                    do
-                    {
-                        wprintf(L"il nodo %d è collegato al nodo %d\n(0=no,1=si)\n", i, j);
-                        scanf("%d", &scelta);
-                    } while (scelta != 0 && scelta != 1);
-                    if (scelta == 1)
-                    {
-                        do
-                        {
-                            wprintf(L"inserire peso tra %d e %d: ", i, j);
-                            scanf("%d", &pesi[i][j]);
-
-                        } while (pesi[i][j] < 0); // i pesi inseriti devono essere positivi e diversi da 0
-                    }
-                }
-            }
-        }
-        break;
-    case 2:
-        for (i = 0; i < nodi; i++) // input non orientato
-        {
-            for (j = 0; j < nodi; j++)
-            {
-                if (i != j)
-                {
-                    if (pesi[i][j] == MAX)
-                    {
-                        do
-                        {
-                            wprintf(L"il nodo %c e' collegato al nodo %c\n(0=no,1=si)\n", 65 + i, 65 + j);
-                            scanf("%d", &scelta);
-                            pesi[j][i] = 9998;
-                            if (scelta == 1)
-                            {
-                                do
-                                {
-                                    wprintf(L"inserire peso tra %c e %c: ", 65 + i, 65 + j);
-                                    scanf("%d", &pesi[i][j]);
-
-                                } while (pesi[i][j] < 0); // i pesi inseriti devono essere positivi e diversi da 0
-                            }
-                        } while (scelta < 0 || scelta > 1);
-                    }
-                    else if (pesi[i][j] == 9998)
-                    {
-                        pesi[i][j] = pesi[j][i];
-                    }
-                }
-            }
-        }
-        break;
-    }
     for (i = 0; i < nodi; i++)
     {
         wprintf(L"\n");
@@ -410,7 +302,7 @@ void inserimentoLinux(int pesi[][MAX], int nodi) // funzione per l'impot di una 
     }
 }
 
-void default5(int matrice[][5]) // Esempio da internet (con una freccia cambiata di verso)
+void default5(size_t c, size_t r, int matrice[c][r]) // Esempio da internet (con una freccia cambiata di verso)
 {
     matrice[0][0] = MAX;
     matrice[0][1] = 2;
@@ -442,8 +334,7 @@ void default5(int matrice[][5]) // Esempio da internet (con una freccia cambiata
     matrice[4][3] = MAX;
     matrice[4][4] = MAX;
 }
-
-void default10(int matrice[][10]) // Esempio dal libro pag.205 (Orientamento fatto da noi)
+void default10(size_t c, size_t r, int matrice[c][r]) // Esempio dal libro pag.205 (Orientamento fatto da noi)
 {
     matrice[0][0] = MAX;
     matrice[0][1] = 1;
@@ -555,7 +446,7 @@ void default10(int matrice[][10]) // Esempio dal libro pag.205 (Orientamento fat
     matrice[9][8] = 1;
     matrice[9][9] = MAX;
 }
-void custom(int matrice[][7])
+void custom(size_t c, size_t r, int matrice[c][r])
 {
     matrice[0][0] = MAX;
     matrice[0][1] = 12;
