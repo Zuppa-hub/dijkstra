@@ -20,6 +20,8 @@ nel punto 3 se avete problemi a farlo subito per qualsiasi grafo iniziate magari
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <wchar.h>
+#include <locale.h>
 #define MAX 9999
 void inizializza(int matrice[][MAX], int n);
 void default5(int matrice[][5]);
