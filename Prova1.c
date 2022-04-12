@@ -1,4 +1,4 @@
-//A quanto pare funziona 
+// A quanto pare funziona
 
 /****************************************************************
 1) APPLICARE ALGORITMO DI DIJKSTRA AD UN GRAFO CON 5 NODI ORIENTATO IN UN SOLO VERSO
@@ -29,15 +29,20 @@ void custom(size_t, size_t, int[*][*]); // matrice di default a nodi variabili c
 void inserimento(size_t, size_t, int pesi[*][*], int nodi, int flag);
 void outputWindows(size_t, size_t, int pesi[*][*], int nodi);
 void outputLinux(size_t, size_t, int pesi[*][*], int nodi);
+void pulisci();
 
 int detect();
 
 int main()
 {
-    setlocale( LC_ALL, "en_US.UTF-8" );
-    int mat5[5][5];      // matrice da riempire con i dati di default, in caso di input dell'utente sovrascrivre e inserire i dati.
-    int mat10[10][10];   // stessa cosa
-    int MATcustom[7][7]; // matrice con i dati inseriti dall'utente DA SISTEMARE< MAX è troppo grande
+    if (detect() == -1)
+    {
+        wprintf(L"PIATTAFORMA NON SUPPORTATA");
+        exit(-1);
+    }
+    setlocale(LC_ALL, "en_US.UTF-8");
+    int mat5[5][5];    // matrice da riempire con i dati di default, in caso di input dell'utente sovrascrivre e inserire i dati.
+    int mat10[10][10]; // stessa cosa
     int Grafo;
     int scelta;
     int nodi;
@@ -45,14 +50,19 @@ int main()
     do
     {
         wprintf(L"\t\t\t --- DIJSKTRA ---\n\n");
-        wprintf(L"\t\t\t1) Grafo a 5 nodi\n\t\t\t2) Grafo a 10 nodi\n\t\t\t3) Grafo a nodi variabili\n\n");
+        wprintf(L"\t\t\t1) Grafo a 5 nodi\n\t\t\t2) Grafo a 10 nodi\n\t\t\t3) Grafo a nodi variabili\n\t\t\t<4) Uscire dal programma\n\n\n");
         wprintf(L"Opzione: ");
         scanf("%d", &Grafo);
+        pulisci();
         switch (Grafo)
         {
+        default:
+            wprintf(L"Uscita dal programma");
+            exit(1);
+            break;
         case 1:
             c = 5, r = 5;
-            wprintf(L"1)Grafo di Default\n2)Grafo con dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
+            wprintf(L"1)Grafo di Default a 5 nodi \n2)Grafo a 5 nodi con dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
             wprintf(L"Opzione: ");
             scanf("%d", &scelta);
             switch (scelta)
@@ -73,9 +83,10 @@ int main()
                 wprintf(L"Scelta non valida, riprova\n\n");
                 break;
             }
+            break;
         case 2:
             c = 10, r = 10;
-            wprintf(L"1)Grafo di Default\n2)Grafo con dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
+            wprintf(L"1)Grafo di Default a 10 nodi\n2)Grafo a 10 nodi con dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
             wprintf(L"Opzione: ");
             scanf("%d", &scelta);
             switch (scelta)
@@ -98,11 +109,26 @@ int main()
                 wprintf(L"scelta non valida, riprova");
                 break;
             }
+            break;
         case 3:
             c = 7, r = 7;
-            wprintf(L"1)Grafo di Default\n2)Grafo con dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
+            wprintf(L"1)Grafo di Default\n2)Grafo con nodi e dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
             wprintf(L"Opzione: ");
             scanf("%d", &scelta);
+            if (scelta == 2 || scelta == 3)
+            {
+                do
+                {
+                    wprintf(L"Digita il numero di nodi");
+                    scanf("%d", &nodi);
+                } while (nodi > 0);
+                c = nodi, r = nodi; // c e r sono le dimensioni della matrice
+            }
+            else if (scelta == 1)
+            {
+                c = 7, r = 7;
+            }
+            int MATcustom[c][r]; // matrice con i dati inseriti dall'utente DA SISTEMARE< MAX e' troppo grande
             switch (scelta)
             {
             case 1:
@@ -111,23 +137,12 @@ int main()
                 break;
             case 2:
                 inizializza(c, r, MATcustom, MAX);
-                do
-                {
-                    wprintf(L"Digita il numero di nodi");
-                    scanf("%d", &nodi);
-                } while (nodi > 0);
-                c = nodi, r = nodi; // c e r sono le dimensioni della matrice
                 inserimento(c, r, MATcustom, nodi, 0);
 
                 // lancio funzione che fa dijkstra
                 break;
             case 3:
                 inizializza(c, r, MATcustom, MAX);
-                do
-                {
-                    wprintf(L"Digita il numero di nodi");
-                    scanf("%d", &nodi);
-                } while (nodi > 0);
                 inserimento(c, r, MATcustom, nodi, 1);
                 // lancio funzione che fa dijksra
                 // altri cammini minimi
@@ -136,8 +151,10 @@ int main()
                 wprintf(L"scelta non valida, riprova");
                 break;
             }
+            break;
         }
-    } while (Grafo != 1 && Grafo != 2 && Grafo != 3);
+        wprintf(L"\n");
+    } while (Grafo == 1 || Grafo == 2 || Grafo == 3);
 }
 
 ///
@@ -170,14 +187,17 @@ int detect() // C program to detect Operating System
 void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funzione per l'impot di una matrice nodi per nodi al momento statica
 {
     setlocale(LC_ALL, "en_US.UTF-8");
-    int i, j;
+    int i, j; // indici per i clicli principali
+    int k, y; // indici per i clicli secondari
     int scelta;
+    int cont = 0;
+    int lettere = 65;
     if (flag == 1)
     {
         wprintf(L"inserire numero nodi: ");
         scanf("%d", &nodi);
     }
-    for (i = 0; i < nodi; i++) // inizioalizzazione matrice pesi
+    for (i = 0; i < nodi; i++) // inizializzazione matrice pesi
     {
         for (j = 0; j < nodi; j++)
         {
@@ -186,7 +206,7 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
     }
     do
     {
-        wprintf(L"il grafo è orientato?\n 1) si\n 2) no\n");
+        wprintf(L"il grafo e' orientato?\n 1) si\n 2) no\n");
         scanf("%d", &scelta);
     } while (scelta != 1 && scelta != 2); // controllo input
     switch (scelta)
@@ -214,6 +234,41 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
                     }
                 }
             }
+            //output tabellare 
+            pulisci();
+            wprintf(L"\\");
+            // aggiungere if che se i nodi sono più di 21 stampa a numeri o bho
+            for (cont = 0; cont < nodi; cont++)
+            {
+                wprintf(L"\t%c", lettere);
+                lettere++;
+            }
+            lettere = 65;
+            for (k = 0; k <= i; k++) // righe
+            {
+                wprintf(L"\n");
+                wprintf(L"%c", lettere);
+                lettere++;
+                for (y = 0; y < nodi; y++) // colonne
+                {
+                    if (pesi[k][y] == MAX)
+                    {
+                        if (detect() == 0)
+                        {
+                            wprintf(L"\tINF\t\t ");
+                        }
+                        else if (detect() == 1)
+                        {
+                            wprintf(L"\t%lc\t", 8734);
+                        }
+                    }
+                    else
+                    {
+                        wprintf(L"\t%d\t\t", pesi[k][y]);
+                    }
+                }
+                wprintf(L"\n");
+            }
         }
         break;
     case 2:
@@ -227,9 +282,8 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
                     {
                         do
                         {
-                            wprintf(L"il nodo %c e' collegato al nodo %c\n(0=no,1=si)\n", 65 + i, 65 + j);
+                            wprintf(L"\nil nodo %c e' collegato al nodo %c\n(0=no,1=si)\n", 65 + i, 65 + j);
                             scanf("%d", &scelta);
-                            pesi[j][i] = 9998;
                             if (scelta == 1)
                             {
                                 do
@@ -239,12 +293,58 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
 
                                 } while (pesi[i][j] < 0); // i pesi inseriti devono essere positivi e diversi da 0
                             }
+                            else
+                            {
+                                pesi[i][j] = 9998;
+                            }
+                            pesi[j][i] = pesi[i][j];
                         } while (scelta < 0 || scelta > 1);
                     }
-                    else if (pesi[i][j] == 9998)
+                }
+            }
+            // output tabellare ad ogni in input di righa, come lo vuole Capretti (cioè`quasi perchè non sappiamo farlo priprio come vuole Capretti).
+            pulisci();
+            wprintf(L"\\");
+            // aggiungere if che se i nodi sono più di 21 stampa a numeri o bho
+            for (cont = 0; cont < nodi; cont++)
+            {
+                wprintf(L"\t%c", lettere);
+                lettere++;
+            }
+            lettere = 65;
+            for (k = 0; k <= i; k++) // righe
+            {
+                wprintf(L"\n");
+                wprintf(L"%c", lettere);
+                lettere++;
+                for (y = 0; y < nodi; y++) // colonne
+                {
+                    if (pesi[k][y] == MAX || pesi[k][y] == 9998)
                     {
-                        pesi[i][j] = pesi[j][i];
+                        if (detect() == 0)
+                        {
+                            wprintf(L"\tINF\t\t ");
+                        }
+                        else if (detect() == 1)
+                        {
+                            wprintf(L"\t%lc\t", 8734);
+                        }
                     }
+                    else
+                    {
+                        wprintf(L"\t%d\t\t", pesi[k][y]);
+                    }
+                }
+                wprintf(L"\n");
+            }
+        }
+        for (i = 0; i < nodi; i++)
+        {
+            for (j = 0; j < nodi; j++)
+            {
+                if (pesi[i][j] == 9998)
+                {
+                    pesi[i][j] = MAX;
                 }
             }
         }
@@ -258,17 +358,25 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
     {
         outputLinux(c, r, pesi, nodi);
     }
-    else
-    {
-        wprintf(L"Sistema non supportato\n");
-    }
 }
 void outputWindows(size_t c, size_t r, int pesi[c][r], int nodi)
 {
+    pulisci();
     int i, j;
+    int lettere = 65;
+    wprintf(L"\\");
+    // aggiungere if che se i nodi sono più di 21 stampa a numeri o bho
+    for (i = 0; i < nodi; i++)
+    {
+        wprintf(L"\t%c", lettere);
+        lettere++;
+    }
+    lettere = 65;
     for (i = 0; i < nodi; i++)
     {
         wprintf(L"\n");
+        wprintf(L"%c", lettere);
+        lettere++;
         for (j = 0; j < nodi; j++)
         {
             if (pesi[i][j] == MAX)
@@ -282,26 +390,49 @@ void outputWindows(size_t c, size_t r, int pesi[c][r], int nodi)
         }
     }
 }
+
 void outputLinux(size_t c, size_t r, int pesi[c][r], int nodi)
 {
+    pulisci();
     int i, j;
+    int lettere = 65;
+    wprintf(L"\\");
+    // aggiungere if che se i nodi sono più di 21 stampa a numeri o bho
+    for (i = 0; i < nodi; i++)
+    {
+        wprintf(L"\t%c", lettere);
+        lettere++;
+    }
+    lettere = 65;
     for (i = 0; i < nodi; i++)
     {
         wprintf(L"\n");
+        wprintf(L"%c", lettere);
+        lettere++;
         for (j = 0; j < nodi; j++)
         {
             if (pesi[i][j] == MAX)
             {
-                wprintf(L"%lc ", 8734);
+                wprintf(L"\t%lc ", 8734);
             }
             else
             {
-                wprintf(L"%d ", pesi[i][j]);
+                wprintf(L"\t%d ", pesi[i][j]);
             }
         }
     }
 }
-
+void pulisci()
+{
+    if (detect() == 0)
+    {
+        system("cls");
+    }
+    else if (detect() == 1)
+    {
+        system("clear");
+    }
+}
 void default5(size_t c, size_t r, int matrice[c][r]) // Esempio da internet (con una freccia cambiata di verso)
 {
     matrice[0][0] = MAX;
