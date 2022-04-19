@@ -62,6 +62,9 @@ int main()
             wprintf(L"Uscita dal programma");
             exit(1);
             break;
+        case 4:
+            splash();
+            break;
         case 1:
             c = 5, r = 5;
             wprintf(L"1)Grafo di Default a 5 nodi \n2)Grafo a 5 nodi con dati inseriti dall'utente\n3)Altri cammini minimi\n\n");
@@ -154,9 +157,6 @@ int main()
                 break;
             }
             break;
-        case 4:
-            splash();
-            break;
         }
         wprintf(L"\n");
     } while (Grafo == 1 || Grafo == 2 || Grafo == 3 || Grafo == 4);
@@ -167,7 +167,7 @@ int main()
 ///
 void splash()
 {
-    
+    printf("ciao");
 }
 void inizializza(size_t c, size_t r, int matrice[c][r], int n)
 {
