@@ -241,18 +241,19 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
                 {
                     do
                     {
-                        wprintf(L"il nodo %d è collegato al nodo %d\n(0=no,1=si)\n", i, j);
+                        wprintf(L"il nodo %c è collegato al nodo %c\n(0=no,1=si)\n", 65+ i, 65 + j);
                         scanf("%d", &scelta1);
                     } while (scelta1 != 0 && scelta1 != 1);
                     if (scelta1 == 1)
                     {
                         do
                         {
-                            wprintf(L"inserire peso tra %d e %d: ", i, j);
+                            wprintf(L"inserire peso tra %c e %c: ", 65 + i, 65 + j);
                             scanf("%d", &pesi[i][j]);
                             //printf("88");
                         } while (pesi[i][j] < 0); // i pesi inseriti devono essere positivi e diversi da 0
                     }
+                    
                 }
             }
             // output tabellare
