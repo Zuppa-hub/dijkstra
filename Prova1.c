@@ -29,6 +29,8 @@ void custom(size_t, size_t, int[*][*]); // matrice di default a nodi variabili c
 void inserimento(size_t, size_t, int pesi[*][*], int nodi, int flag);
 void outputWindows(size_t, size_t, int pesi[*][*], int nodi);
 void outputLinux(size_t, size_t, int pesi[*][*], int nodi);
+// void djikstra(size_t, size_t, int pesi[*][*], int nodi);
+void splash();
 void pulisci();
 
 int detect();
@@ -50,7 +52,7 @@ int main()
     do
     {
         wprintf(L"\t\t\t --- DIJSKTRA ---\n\n");
-        wprintf(L"\t\t\t1) Grafo a 5 nodi\n\t\t\t2) Grafo a 10 nodi\n\t\t\t3) Grafo a nodi variabili\n\t\t\t<4) Uscire dal programma\n\n\n");
+        wprintf(L"\t\t\t1) Grafo a 5 nodi\n\t\t\t2) Grafo a 10 nodi\n\t\t\t3) Grafo a nodi variabili\n\t\t\t4) spiegazioni \n\t\t\t>4) Uscire dal programma\n\n\n");
         wprintf(L"Opzione: ");
         scanf("%d", &Grafo);
         pulisci();
@@ -152,15 +154,21 @@ int main()
                 break;
             }
             break;
+        case 4:
+            splash();
+            break;
         }
         wprintf(L"\n");
-    } while (Grafo == 1 || Grafo == 2 || Grafo == 3);
+    } while (Grafo == 1 || Grafo == 2 || Grafo == 3 || Grafo == 4);
 }
 
 ///
 /// FUNZIONI
 ///
-
+void splash()
+{
+    
+}
 void inizializza(size_t c, size_t r, int matrice[c][r], int n)
 {
     int i, j;
@@ -234,7 +242,7 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
                     }
                 }
             }
-            //output tabellare 
+            // output tabellare
             pulisci();
             wprintf(L"\\");
             // aggiungere if che se i nodi sono più di 21 stampa a numeri o bho
@@ -635,3 +643,67 @@ void custom(size_t c, size_t r, int matrice[c][r])
     matrice[6][5] = 11;
     matrice[6][6] = MAX;
 }
+
+// djikstra mob
+/* void djikstra(int pesi[][100], int nodi)
+{
+    int prec[nodi];
+    int costi[nodi];
+    int visit[nodi];
+    int i,j,k,z,costmin,nextnode,part,app;
+    printf("\ninserire nodo di partenza: ");
+    scanf("%d",&i);
+    printf("\ninserire nodo di arrivo: ");
+    scanf("%d",&j);
+    i--;      //quarto nodo = nodo 3
+    j--;      //quarto nodo = nodo 3
+    part=i;
+    printf("\n%d\n",part);
+    for(k=0;k<nodi;k++)
+    {
+        visit[k]=0;
+        prec[k]=i;
+        costi[k]=pesi[i][k];
+    }
+    visit[i]=1;
+    while(visit[j]!=1)
+    {
+        for(k=0;k<nodi;k++)
+        {
+            if(visit[k]!=1 && k!=i)
+            {
+                app=pesi[i][k]+costi[i];
+                if(app<costi[k])
+                {
+                    costi[k]=pesi[i][k]+costi[i];
+                    printf("\ncosto %d: %d",k+1,costi[k]);
+                    prec[k]=i;
+                }
+            }
+        }
+        costmin=MAX;
+        for(k=0;k<nodi;k++)
+        {
+            if(costi[k]<costmin && visit[k]!=1)
+            {
+                costmin=costi[k];
+                printf("\ncosto minore: %d",costmin);
+                nextnode=k;
+                printf("\nnextnode: %d",nextnode);
+            }
+        }
+        visit[nextnode]=1;
+        i=nextnode;
+    }
+    printf("\ncosto minimo: %d\n",costi[j]);
+    printf("percorso minimo: ");
+    printf("%d",j+1);
+    j=prec[j];
+    do
+    {
+        printf("->%d",j+1);
+        j=prec[j];
+    }while(j!=part);
+    printf("->%d",j+1);
+    printf("\n");
+} */
