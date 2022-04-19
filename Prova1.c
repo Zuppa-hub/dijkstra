@@ -29,7 +29,9 @@ void custom(size_t, size_t, int[*][*]); // matrice di default a nodi variabili c
 void inserimento(size_t, size_t, int pesi[*][*], int nodi, int flag);
 void outputWindows(size_t, size_t, int pesi[*][*], int nodi);
 void outputLinux(size_t, size_t, int pesi[*][*], int nodi);
-// void djikstra(size_t, size_t, int pesi[*][*], int nodi);
+void djikstra(size_t, size_t, int pesi[*][*], int nodi);
+int visitato(int visit[], int nodi, int arrivo);
+void stamparobe(int visit[], int costi[], int prec[], int nodi);
 void splash();
 void pulisci();
 
@@ -58,10 +60,6 @@ int main()
         pulisci();
         switch (Grafo)
         {
-        default:
-            wprintf(L"Uscita dal programma");
-            exit(1);
-            break;
         case 4:
             splash();
             break;
@@ -73,17 +71,21 @@ int main()
             switch (scelta)
             {
             case 1:
+                printf("ciao");
                 default5(c, r, mat5);
+                djikstra(5, 5, mat5, 5);
                 // lancio funzione che fa dijkstra
                 break;
             case 2:
                 inizializza(c, r, mat5, 5);
                 inserimento(c, r, mat5, 5, 0);
+                djikstra(5, 5, mat5, 5);
                 // lancio funzione che fa dijkstra
                 break;
             case 3:
                 inizializza(c, r, mat5, 5);
                 inserimento(c, r, mat5, 5, 0);
+                // altri percorsi
             default:
                 wprintf(L"Scelta non valida, riprova\n\n");
                 break;
@@ -98,11 +100,13 @@ int main()
             {
             case 1:
                 default10(c, r, mat10);
+                djikstra(10, 10, mat10, 10);
                 // lancio funzione che fa dijkstra
                 break;
             case 2:
                 inizializza(c, r, mat10, 10);
                 inserimento(c, r, mat10, 10, 0);
+                djikstra(10, 10, mat10, 10);
                 // lancio funzione che fa dijkstra
                 break;
             case 3:
@@ -126,7 +130,7 @@ int main()
                 {
                     wprintf(L"Digita il numero di nodi");
                     scanf("%d", &nodi);
-                } while (nodi > 0);
+                } while (nodi < 1);
                 c = nodi, r = nodi; // c e r sono le dimensioni della matrice
             }
             else if (scelta == 1)
@@ -138,17 +142,20 @@ int main()
             {
             case 1:
                 custom(c, r, MATcustom);
+                djikstra(c, r, MATcustom, 7);
                 //  lancio funzione che fa dijkstra
                 break;
             case 2:
+                printf("ciao");
                 inizializza(c, r, MATcustom, MAX);
+                printf("eiii");
                 inserimento(c, r, MATcustom, nodi, 0);
-
+                djikstra(c, r, MATcustom, nodi);
                 // lancio funzione che fa dijkstra
                 break;
             case 3:
                 inizializza(c, r, MATcustom, MAX);
-                inserimento(c, r, MATcustom, nodi, 1);
+                inserimento(c, r, MATcustom, nodi, 0);
                 // lancio funzione che fa dijksra
                 // altri cammini minimi
                 break;
@@ -171,6 +178,7 @@ void splash()
 }
 void inizializza(size_t c, size_t r, int matrice[c][r], int n)
 {
+    printf("oiii");
     int i, j;
     for (i = 0; i < n; i++)
     {
@@ -179,6 +187,7 @@ void inizializza(size_t c, size_t r, int matrice[c][r], int n)
             matrice[i][j] = MAX;
         }
     }
+    printf("uiiii");
 }
 
 int detect() // C program to detect Operating System
@@ -194,24 +203,28 @@ int detect() // C program to detect Operating System
 
 void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funzione per l'impot di una matrice nodi per nodi al momento statica
 {
+    printf("1111");
     setlocale(LC_ALL, "en_US.UTF-8");
+    printf("2222");
     int i, j; // indici per i clicli principali
     int k, y; // indici per i clicli secondari
-    int scelta;
+    int scelta, scelta1;
     int cont = 0;
     int lettere = 65;
-    if (flag == 1)
-    {
-        wprintf(L"inserire numero nodi: ");
-        scanf("%d", &nodi);
-    }
-    for (i = 0; i < nodi; i++) // inizializzazione matrice pesi
+    /*     if (flag == 1)
+        {
+            wprintf(L"inserire numero nodi: ");
+            scanf("%d", &nodi);
+        } */
+    /* for (i = 0; i < nodi; i++) // inizializzazione matrice pesi
     {
         for (j = 0; j < nodi; j++)
         {
             pesi[i][j] = MAX;
         }
-    }
+    } */
+    fflush(stdout);
+    fflush(stdin);
     do
     {
         wprintf(L"il grafo e' orientato?\n 1) si\n 2) no\n");
@@ -229,15 +242,15 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
                     do
                     {
                         wprintf(L"il nodo %d è collegato al nodo %d\n(0=no,1=si)\n", i, j);
-                        scanf("%d", &scelta);
-                    } while (scelta != 0 && scelta != 1);
-                    if (scelta == 1)
+                        scanf("%d", &scelta1);
+                    } while (scelta1 != 0 && scelta1 != 1);
+                    if (scelta1 == 1)
                     {
                         do
                         {
                             wprintf(L"inserire peso tra %d e %d: ", i, j);
                             scanf("%d", &pesi[i][j]);
-
+                            //printf("88");
                         } while (pesi[i][j] < 0); // i pesi inseriti devono essere positivi e diversi da 0
                     }
                 }
@@ -371,61 +384,119 @@ void outputWindows(size_t c, size_t r, int pesi[c][r], int nodi)
 {
     pulisci();
     int i, j;
-    int lettere = 65;
-    wprintf(L"\\");
-    // aggiungere if che se i nodi sono più di 21 stampa a numeri o bho
-    for (i = 0; i < nodi; i++)
+    if (nodi < 26)
     {
-        wprintf(L"\t%c", lettere);
-        lettere++;
-    }
-    lettere = 65;
-    for (i = 0; i < nodi; i++)
-    {
-        wprintf(L"\n");
-        wprintf(L"%c", lettere);
-        lettere++;
-        for (j = 0; j < nodi; j++)
+        int lettere = 65;
+        wprintf(L"\\");
+        // aggiungere if che se i nodi sono più di 21 stampa a numeri o bho
+        for (i = 0; i < nodi; i++)
         {
-            if (pesi[i][j] == MAX)
+            wprintf(L"\t%c", lettere);
+            lettere++;
+        }
+        lettere = 65;
+        for (i = 0; i < nodi; i++)
+        {
+            wprintf(L"\n");
+            wprintf(L"%c", lettere);
+            lettere++;
+            for (j = 0; j < nodi; j++)
             {
-                wprintf(L"\tINF ");
+                if (pesi[i][j] == MAX)
+                {
+                    wprintf(L"\tINF ");
+                }
+                else
+                {
+                    wprintf(L"\t%d ", pesi[i][j]);
+                }
             }
-            else
+        }
+    }
+    else // stampo a numeri
+    {
+        int cont = 0;
+        wprintf(L"\\");
+        for (cont = 0; cont < nodi; cont++)
+        {
+            wprintf(L"\t%d", cont);
+        }
+        for (i = 0; i < nodi; i++)
+        {
+            wprintf(L"\n");
+            wprintf(L"%d", i);
+            for (j = 0; j < nodi; j++)
             {
-                wprintf(L"\t%d ", pesi[i][j]);
+                if (pesi[i][j] == MAX)
+                {
+                    wprintf(L"\tINF ");
+                }
+                else
+                {
+                    wprintf(L"\t%d ", pesi[i][j]);
+                }
             }
         }
     }
 }
-
 void outputLinux(size_t c, size_t r, int pesi[c][r], int nodi)
 {
     pulisci();
     int i, j;
-    int lettere = 65;
-    wprintf(L"\\");
-    // aggiungere if che se i nodi sono più di 21 stampa a numeri o bho
-    for (i = 0; i < nodi; i++)
+    if (nodi < 26)
     {
-        wprintf(L"\t%c", lettere);
-        lettere++;
-    }
-    lettere = 65;
-    for (i = 0; i < nodi; i++)
-    {
-        wprintf(L"\n");
-        wprintf(L"%c", lettere);
-        lettere++;
-        for (j = 0; j < nodi; j++)
+        int lettere = 65;
+        wprintf(L"\\");
+        // aggiungere if che se i nodi sono più di 21 stampa a numeri o bho
+        for (i = 0; i < nodi; i++)
         {
-            if (pesi[i][j] == MAX)
+            wprintf(L"\t%c", lettere);
+            lettere++;
+        }
+        lettere = 65;
+        for (i = 0; i < nodi; i++)
+        {
+            wprintf(L"\n");
+            wprintf(L"%c", lettere);
+            lettere++;
+            for (j = 0; j < nodi; j++)
             {
-                wprintf(L"\t%lc ", 8734);
+                if (pesi[i][j] == MAX)
+                {
+                    wprintf(L"\t%lc ", 8734);
+                }
+                else
+                {
+                    wprintf(L"\t%d ", pesi[i][j]);
+                }
             }
-            else
+        }
+    }
+    else
+    {
+        wprintf(L"\\");
+        int cont = 0;
+        for (i = 0; i < nodi; i++)
+        {
+            wprintf(L"\t%d", cont);
+            cont++;
+        }
+        cont = 0;
+        for (i = 0; i < nodi; i++)
+        {
+            wprintf(L"\n");
+            wprintf(L"%d", cont);
+            cont++;
+            for (j = 0; j < nodi; j++)
             {
-                wprintf(L"\t%d ", pesi[i][j]);
+                if (pesi[i][j] == MAX)
+                {
+                    wprintf(L"\t%lc ", 8734);
+                }
+                else
+                {
+                    wprintf(L"\t%d ", pesi[i][j]);
+                }
             }
         }
     }
@@ -707,3 +778,120 @@ void custom(size_t c, size_t r, int matrice[c][r])
     printf("->%d",j+1);
     printf("\n");
 } */
+void djikstra(size_t c, size_t r, int pesi[c][r], int nodi)
+{
+    int part, dest;  // nodo di partenza e di destinazione
+    int prec[nodi];  // vettori di predecessori
+    int costi[nodi]; // vettori dei costi
+    int visit[nodi]; // vettori di visitati
+    int i = 0;
+    int Cmin; // costo minimo
+    int prossimoNodo;
+    int attuale = part;
+    int cont = 0;
+    do
+    {
+        printf("\nInserisci il nodo di partenza");
+        scanf("%d", &part);
+    } while (part < 0 || part > nodi);
+    do
+    {
+        printf("\nInserisci il nodo di arrivo");
+        scanf("%d", &dest);
+    } while (dest < 0 || dest > nodi);
+    if (part == dest)
+    {
+        printf("\nIl nodo di partenza e di arrivo coincidono");
+        return;
+    }
+    for (i = 0; i < nodi; i++) // inizializzazione
+    {
+        costi[i] = pesi[part][i];
+        if (costi[i] != MAX)
+        {
+            prec[i] = part;
+        }
+        else
+        {
+            prec[i] = -1;
+        }
+
+        visit[i] = 0;
+    }
+    visit[part] = 1;
+
+    while (visitato(visit, nodi, dest) == 1)
+    {
+        stamparobe(visit, costi, prec, nodi);
+        Cmin = MAX;
+        for (i = 0; i < nodi; i++)
+        {
+            if (costi[i] < Cmin && visit[i] == 0 && i != dest)
+            {
+                Cmin = costi[i];
+                attuale = i;
+                cont = 0;
+            }
+            else if (Cmin == MAX && i != dest)
+            {
+                attuale = i;
+                cont = 1;
+            }
+        }
+
+        if (cont == 1)
+        {
+            visit[attuale] = 1;
+        }
+        else
+        {
+            for (i = 0; i < nodi; i++)
+            {
+                if (pesi[attuale][i] != MAX && visit[i] == 0)
+                {
+                    if (costi[attuale] + pesi[attuale][i] < costi[i])
+                    {
+                        costi[i] = costi[attuale] + pesi[attuale][i];
+                        prec[i] = attuale;
+                    }
+                }
+            }
+            visit[attuale] = 1;
+        }
+    }
+    printf("\n\n\n\n\n\tCosto finale : %d", costi[dest]);
+}
+
+int visitato(int visit[], int nodi, int arrivo)
+{
+    int i, cont = 0;
+    for (i = 0; i < nodi; i++)
+    {
+        if (visit[i] == 0 && i != arrivo)
+            cont = 1;
+    }
+    if (cont == 1)
+        return 1; // tutti esplorati
+    return 0;
+}
+void stamparobe(int visit[], int costi[], int prec[], int nodi)
+{
+    int i;
+    printf("\n\n\nVisitati:");
+    for (i = 0; i < nodi; i++)
+    {
+        printf("\n%d", visit[i]);
+    }
+
+    printf("\n\n\nCosti:");
+    for (i = 0; i < nodi; i++)
+    {
+        printf("\n%d", costi[i]);
+    }
+
+    printf("\n\n\nPrec:");
+    for (i = 0; i < nodi; i++)
+    {
+        printf("\n%d", prec[i]);
+    }
+}
