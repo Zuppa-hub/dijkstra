@@ -19,9 +19,9 @@ nel punto 3 se avete problemi a farlo subito per qualsiasi grafo iniziate magari
 ****************************************************************/
 
 //    cose da fare
-// partenza arrivo a lettere
-// percorso finale
-// sistemare stampe
+// partenza arrivo a lettere        - FATTO
+// percorso finale                  - NON FUNZIONA NULLA
+// sistemare stampe                 - FATTO, e come poi
 // sistemare commenti
 // lasciare vettori stampati ???
 // altri cammini possibili
@@ -31,17 +31,25 @@ nel punto 3 se avete problemi a farlo subito per qualsiasi grafo iniziate magari
 #include <wchar.h>
 #include <locale.h>
 #include <limits.h>
+
+// roba strana per includere le librerie dei rispettivi sistemi operativi
+#ifdef _WIN32
 #include <windows.h>
+#elif __linux__
+#include <unistd.h>
+#include <sys/ioctl.h>
+#endif
 
 #define MAX ((int)(~0u >> 1u))
+
 void inizializza(size_t, size_t, int[*][*], int nodi); // Funzione di inizializzazione a MAX
 void default5(size_t, size_t, int[*][*]);              // Matrice di default a 5 nodi
 void default10(size_t, size_t, int[*][*]);             // Matrice di default a 10 nodi
 void custom(size_t, size_t, int[*][*]);                // matrice di default a nodi variabili contiene 7 nodi
 void pulisci();
 int detect();
-void splash(); // restituisce il numero di colonne
-int scelta();  // scelta del grafo tra custom e default
+void splash(int righe); // restituisce il numero di colonne
+int scelta();           // scelta del grafo tra custom e default
 void inserimento(size_t, size_t, int pesi[*][*], int nodi, int flag);
 void outputWindows(size_t, size_t, int pesi[*][*], int nodi);
 void outputLinux(size_t, size_t, int pesi[*][*], int nodi);
@@ -49,10 +57,13 @@ void output(size_t, int mat[*][*], int nodi);
 void dijkstra(size_t, size_t, int pesi[*][*], int nodi);
 int visitato(int visit[], int nodi, int arrivo);
 void stamparobe(int visit[], int costi[], int prec[], int nodi);
+int prendirighe();
+
 int main()
 {
-    splash();
     setlocale(LC_ALL, "en_US.UTF-8");
+    int righe = prendirighe(); // wprintf(L"r=%d\n", righe);
+    splash(righe);
     int mat5[5][5];    // matrice da riempire con i dati di default, in caso di input dell'utente sovrascrivre e inserire i dati.
     int mat10[10][10]; // stessa cosa
     int Grafo;
@@ -144,9 +155,30 @@ int main()
             break;
         }
         wprintf(L"\n");
-        system("PAUSE");
+        if (detect() == 1)
+        {
+            char tmp[0];
+            wprintf(L"Premi un tasto per continuare...\n");
+            scanf("%s", tmp);
+        }
+        else
+            system("PAUSE");
         pulisci();
     } while (sceltaNODi > 0 && sceltaNODi < 4);
+}
+int prendirighe()
+{
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    return ((csbi.srWindow.Right - csbi.srWindow.Left + 1) / 2);
+#elif __linux__
+    struct winsize ws; // struct dinamica per allocare il numero di righe e colonne del terminale in base alla dimensione dello schermo
+    ioctl(1, TIOCGWINSZ, &ws);
+    int colonne = ws.ws_col; // prendo le colonne
+    colonne = colonne / 2;   // colonne /2 per arribvare al centro dello schermo
+    return colonne;
+#endif
 }
 void output(size_t DIM, int mat[DIM][DIM], int nodi)
 {
@@ -220,6 +252,8 @@ void outputWindows(size_t c, size_t r, int pesi[c][r], int nodi)
 }
 void outputLinux(size_t c, size_t r, int pesi[c][r], int nodi)
 {
+    fflush(stdout);
+    setlocale(LC_ALL, "en_US.UTF-8");
     pulisci();
     int i, j;
     if (nodi < 26)
@@ -282,9 +316,6 @@ void outputLinux(size_t c, size_t r, int pesi[c][r], int nodi)
 }
 void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funzione per l'imput di una matrice nodi per nodi al momento statica
 {
-
-    setlocale(LC_ALL, "en_US.UTF-8");
-
     int i, j; // indici per i cicli principali
     int k, y; // indici per i cicli secondari
     int scelta, scelta1;
@@ -456,19 +487,50 @@ void dijkstra(size_t c, size_t r, int pesi[c][r], int nodi)
     int prossimoNodo;
     int attuale = part;
     int cont = 0;
+    char Npart[1], Ndest[1];
     do
     {
-        printf("\nInserisci il nodo di partenza");
-        scanf("%d", &part);
+        if (nodi < 26)
+        {
+            wprintf(L"\ninserire nodo di partenza: \nEs Nodo A");
+            fflush(stdin);
+            scanf("%s", Npart);
+            part = Npart[0] - 65;
+        }
+        else
+        {
+            wprintf(L"\nInserisci il nodo di partenza \nEs Nodo 0");
+            fflush(stdin);
+            scanf("%d", &part);
+        }
+        if (part < 0 || part > nodi)
+        {
+            wprintf(L"\nNodo non valido");
+        }
     } while (part < 0 || part > nodi);
+    fflush(stdin);
     do
     {
-        printf("\nInserisci il nodo di arrivo");
-        scanf("%d", &dest);
-    } while (dest < 0 || dest > nodi);
+        if (nodi < 26)
+        {
+            wprintf(L"\ninserire nodo di destinazione: \nEs Nodo C");
+            scanf("%s", Ndest);
+            // fgets(Ndest, 1, stdin);
+            dest = Ndest[0] - 65;
+        }
+        else
+        {
+            wprintf(L"\nInserisci il nodo di destinazione \nEs Nodo 2");
+            scanf("%d", &dest);
+        }
+        if (dest < 0 || dest >= nodi)
+        {
+            wprintf(L"\nNodo non valido");
+        }
+    } while (dest < 0 || dest >= nodi);
     if (part == dest)
     {
-        printf("\nIl nodo di partenza e di arrivo coincidono");
+        wprintf(L"\nIl nodo di partenza e di arrivo coincidono");
         return;
     }
     for (i = 0; i < nodi; i++) // inizializzazione
@@ -553,29 +615,27 @@ int scelta()
     } while (sceltaDEF != 1 && sceltaDEF != 2);
     return sceltaDEF;
 }
-void splash()
+void splash(int righe)
 {
+    pulisci();
     if (detect() == -1)
     {
         wprintf(L"PIATTAFORMA NON SUPPORTATA");
         exit(-1);
     }
-    // per centrare le scritte
-    wprintf(L" _                                     _        \n");
-    wprintf(L"| |                                   | |       \n");
-    wprintf(L"| |__   ___ _ ____   _____ _ __  _   _| |_ ___  \n");
-    wprintf(L"| '_ \\ / _ \\ '_ \\ \\ / / _ \\ '_ \\| | | | __/ _ \\ \n");
-    wprintf(L"| |_) |  __/ | | \\ V /  __/ | | | |_| | || (_) |\n");
-    wprintf(L"|_.__/ \\___|_| |_|\\_/ \\___|_| |_|\\__,_|\\__\\___/ \n");
-    wprintf(L"Impementazione dell'algoritmo di dijkstra\n");
-    if (detect() == 0)
-    {
-        Sleep(3000);
-    }
-    else if (detect() == 1)
-    {
-       sleep(3);
-    }
+    righe = righe - 26;
+    wprintf(L"%*s _                                     _        \n", righe,"");
+    wprintf(L"%*s| |                                   | |       \n", righe,"");
+    wprintf(L"%*s| |__   ___ _ ____   _____ _ __  _   _| |_ ___  \n", righe,"");
+    wprintf(L"%*s| |'_ \\ / _ \\ '_ \\ \\ / / _ \\ '_ \\| | | | __/ _ \\ \n", righe,"");
+    wprintf(L"%*s| |_) |  __/ | | \\ V /  __/ | | | |_| | || (_) |\n", righe,"");
+    wprintf(L"%*s|_.__/ \\___|_| |_|\\_/ \\___|_| |_|\\__,_|\\__\\___/ \n", righe,"");
+    wprintf(L"%*sImpementazione dell'algoritmo di dijkstra\n", righe+3,"");
+#ifdef _WIN32
+    Sleep(3000);
+#elif __linux__
+    sleep(3);
+#endif
     pulisci();
 }
 int detect() // C program to detect Operating System
@@ -816,21 +876,21 @@ int visitato(int visit[], int nodi, int arrivo)
 void stamparobe(int visit[], int costi[], int prec[], int nodi)
 {
     int i;
-    printf("\n\n\nVisitati:");
+    wprintf(L"\n\n\nVisitati:");
     for (i = 0; i < nodi; i++)
     {
-        printf("\n%d", visit[i]);
+        wprintf(L"\n%d", visit[i]);
     }
 
-    printf("\n\n\nCosti:");
+    wprintf(L"\n\n\nCosti:");
     for (i = 0; i < nodi; i++)
     {
-        printf("\n%d", costi[i]);
+        wprintf(L"\n%d", costi[i]);
     }
 
-    printf("\n\n\nPrec:");
+    wprintf(L"\n\n\nPrec:");
     for (i = 0; i < nodi; i++)
     {
-        printf("\n%d", prec[i]);
+        wprintf(L"\n%d", prec[i]);
     }
 }
