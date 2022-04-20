@@ -20,11 +20,10 @@ nel punto 3 se avete problemi a farlo subito per qualsiasi grafo iniziate magari
 
 //    cose da fare
 // partenza arrivo a lettere        - FATTO
-// percorso finale                  - NON FUNZIONA NULLA
+// percorso finale                  - NON FUNZIONA NULLA  cioè bisogna sistemare l'usita dal while, la cosa delgli esplorati non va 
 // sistemare stampe                 - FATTO, e come poi
-// sistemare commenti
-// lasciare vettori stampati ???
-// altri cammini possibili
+// sistemare commenti               - DA FARE
+// altri cammini possibili          - DA FARE MA NON SI SA COME 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,8 +48,8 @@ void custom(size_t, size_t, int[*][*]);                // matrice di default a n
 void pulisci();
 int detect();
 void splash(int righe); // restituisce il numero di colonne
-int scelta();           // scelta del grafo tra custom e default
-void inserimento(size_t, size_t, int pesi[*][*], int nodi, int flag);
+int scelta(int righe);  // scelta del grafo tra custom e default
+void inserimento(size_t, size_t, int pesi[*][*], int nodi, int flag, int righe);
 void outputWindows(size_t, size_t, int pesi[*][*], int nodi);
 void outputLinux(size_t, size_t, int pesi[*][*], int nodi);
 void output(size_t, int mat[*][*], int nodi);
@@ -72,9 +71,9 @@ int main()
     size_t DIM; // dimensione matrice
     do
     {
-        wprintf(L" --- DIJSKTRA ---\n\n");
-        wprintf(L"1) Grafo a 5 nodi\n2) Grafo a 10 nodi\n3) Grafo a nodi variabili\n?) Premi qualsiasi altro numero per uscire\n\n\n");
-        wprintf(L"Opzione: ");
+        wprintf(L"%*s --- DIJSKTRA ---\n\n", righe - 9, "");
+        wprintf(L"%*s1) Grafo a 5 nodi\n%*s2) Grafo a 10 nodi\n%*s3) Grafo a nodi variabili\n%*s?) Premi qualsiasi altro numero per uscire\n\n\n", righe - 9, "", righe - 9, "", righe - 12, "", righe - 21, "");
+        wprintf(L"%*sOpzione: ", righe - 5, "");
         scanf("%d", &sceltaNODi);
         pulisci();
         switch (sceltaNODi)
@@ -83,7 +82,7 @@ int main()
             DIM = 5;
             nodi = 5;
             inizializza(DIM, DIM, mat5, nodi);
-            sceltaDEF = scelta();
+            sceltaDEF = scelta(righe);
             switch (sceltaDEF)
             {
             case 1:
@@ -92,7 +91,7 @@ int main()
                 dijkstra(DIM, DIM, mat5, nodi);
                 break;
             case 2:
-                inserimento(DIM, DIM, mat5, nodi, 0);
+                inserimento(DIM, DIM, mat5, nodi, 0, righe);
                 output(DIM, mat5, nodi);
                 dijkstra(DIM, DIM, mat5, nodi);
                 break;
@@ -102,7 +101,7 @@ int main()
             DIM = 10;
             nodi = 10;
             inizializza(DIM, DIM, mat10, nodi);
-            sceltaDEF = scelta();
+            sceltaDEF = scelta(righe);
             switch (sceltaDEF)
             {
             case 1:
@@ -111,14 +110,14 @@ int main()
                 dijkstra(DIM, DIM, mat10, nodi);
                 break;
             case 2:
-                inserimento(DIM, DIM, mat10, nodi, 0);
+                inserimento(DIM, DIM, mat10, nodi, 0, righe);
                 output(DIM, mat10, nodi);
                 dijkstra(DIM, DIM, mat10, nodi);
                 break;
             }
             break;
         case 3:
-            sceltaDEF = scelta();
+            sceltaDEF = scelta(righe);
             if (sceltaDEF == 1)
             {
                 DIM = 7;
@@ -126,13 +125,20 @@ int main()
             }
             else if (sceltaDEF == 2)
             {
+                int cont = 0;
                 do
                 {
-                    wprintf(L"Inserire il numero di nodi: ");
+                    wprintf(L"%*sInserire il numero di nodi: ", righe - 14, "");
                     scanf("%d", &nodi);
                     if (nodi < 3)
                     {
-                        wprintf(L"\nIl numero di nodi deve essere maggiore di 2\n");
+                        wprintf(L"%*s\nIl numero di nodi deve essere maggiore di 2\n", righe - 21, "");
+                        cont++;
+                        if (cont > 3)
+                        {
+                            wprintf(L"Sbagliare e'umano, perseverare e' diabolico\n");
+                            break;
+                        }
                     }
                 } while (nodi < 3);
                 DIM = nodi;
@@ -147,7 +153,7 @@ int main()
                 dijkstra(DIM, DIM, MATcustom, nodi);
                 break;
             case 2:
-                inserimento(DIM, DIM, MATcustom, nodi, 1);
+                inserimento(DIM, DIM, MATcustom, nodi, 1, righe);
                 output(DIM, MATcustom, nodi);
                 dijkstra(DIM, DIM, MATcustom, nodi);
                 break;
@@ -158,7 +164,7 @@ int main()
         if (detect() == 1)
         {
             char tmp[0];
-            wprintf(L"Premi un tasto per continuare...\n");
+            wprintf(L"%*sPremi un tasto per continuare...\n", righe - 16, "");
             scanf("%s", tmp);
         }
         else
@@ -314,7 +320,7 @@ void outputLinux(size_t c, size_t r, int pesi[c][r], int nodi)
         }
     }
 }
-void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funzione per l'imput di una matrice nodi per nodi al momento statica
+void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag, int righe) // funzione per l'imput di una matrice nodi per nodi al momento statica
 {
     int i, j; // indici per i cicli principali
     int k, y; // indici per i cicli secondari
@@ -327,7 +333,7 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
     {
         do
         {
-            wprintf(L"il grafo e' orientato?\n 1) SI\n 2) NO\n");
+            wprintf(L"%*sil grafo e' orientato?\n%*s 1) SI\n %*s2) NO\n", righe - 11, "", righe - 1, "", righe - 1, "");
             scanf("%d", &scelta);
         } while (scelta != 1 && scelta != 2); // controllo input
     }
@@ -346,14 +352,14 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
                 {
                     do
                     {
-                        wprintf(L"il nodo %c e' collegato al nodo %c\n1) SI\n 2) NO)\n", 65 + i, 65 + j);
+                        wprintf(L"%*sil nodo %c e' collegato al nodo %c\n%*s1) SI\n%*s2) NO)\n", righe - 17, "", 65 + i, 65 + j, righe - 1, "", righe - 1, "");
                         scanf("%d", &scelta1);
                     } while (scelta1 != 1 && scelta1 != 2);
                     if (scelta1 == 1)
                     {
                         do
                         {
-                            wprintf(L"inserire peso tra %c e %c: ", 65 + i, 65 + j);
+                            wprintf(L"%*sinserire peso tra %c e %c: ", righe - 12, "", 65 + i, 65 + j);
                             scanf("%d", &pesi[i][j]);
                         } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
                     }
@@ -407,13 +413,13 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // funz
                     {
                         do
                         {
-                            wprintf(L"\nil nodo %c e' collegato al nodo %c\n(0=no,1=si)\n", 65 + i, 65 + j);
+                            wprintf(L"%*sil nodo %c e' collegato al nodo %c\n%*s1) SI\n%*s2) NO)\n", righe - 17, "", 65 + i, 65 + j, righe - 1, "", righe - 1, "");
                             scanf("%d", &scelta);
                             if (scelta == 1)
                             {
                                 do
                                 {
-                                    wprintf(L"inserire peso tra %c e %c: ", 65 + i, 65 + j);
+                                    wprintf(L"%*sinserire peso tra %c e %c: ", righe - 12, "", 65 + i, 65 + j);
                                     scanf("%d", &pesi[i][j]);
 
                                 } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
@@ -601,16 +607,16 @@ void inizializza(size_t c, size_t r, int matrice[c][r], int nodi)
         }
     }
 }
-int scelta()
+int scelta(int righe)
 {
     int sceltaDEF;
     do
     {
-        wprintf(L"1) Soluzione di Default\n2) Soluzione con dati inseriti dall'utente\n");
+        wprintf(L"%*s1) Soluzione di Default\n%*s2) Soluzione con dati inseriti dall'utente\n", righe - 11, "", righe - 21, "");
         scanf("%d", &sceltaDEF);
         if (sceltaDEF != 1 && sceltaDEF != 2)
         {
-            wprintf(L"Opzione non valida,riprova\n");
+            wprintf(L"%*sOpzione non valida,riprova\n", righe - 13, "");
         }
     } while (sceltaDEF != 1 && sceltaDEF != 2);
     return sceltaDEF;
@@ -624,13 +630,13 @@ void splash(int righe)
         exit(-1);
     }
     righe = righe - 26;
-    wprintf(L"%*s _                                     _        \n", righe,"");
-    wprintf(L"%*s| |                                   | |       \n", righe,"");
-    wprintf(L"%*s| |__   ___ _ ____   _____ _ __  _   _| |_ ___  \n", righe,"");
-    wprintf(L"%*s| |'_ \\ / _ \\ '_ \\ \\ / / _ \\ '_ \\| | | | __/ _ \\ \n", righe,"");
-    wprintf(L"%*s| |_) |  __/ | | \\ V /  __/ | | | |_| | || (_) |\n", righe,"");
-    wprintf(L"%*s|_.__/ \\___|_| |_|\\_/ \\___|_| |_|\\__,_|\\__\\___/ \n", righe,"");
-    wprintf(L"%*sImpementazione dell'algoritmo di dijkstra\n", righe+3,"");
+    wprintf(L"%*s _                                     _        \n", righe, "");
+    wprintf(L"%*s| |                                   | |       \n", righe, "");
+    wprintf(L"%*s| |__   ___ _ ____   _____ _ __  _   _| |_ ___  \n", righe, "");
+    wprintf(L"%*s| |'_ \\ / _ \\ '_ \\ \\ / / _ \\ '_ \\| | | | __/ _ \\ \n", righe, "");
+    wprintf(L"%*s| |_) |  __/ | | \\ V /  __/ | | | |_| | || (_) |\n", righe, "");
+    wprintf(L"%*s|_.__/ \\___|_| |_|\\_/ \\___|_| |_|\\__,_|\\__\\___/ \n", righe, "");
+    wprintf(L"%*sImpementazione dell'algoritmo di dijkstra\n", righe + 3, "");
 #ifdef _WIN32
     Sleep(3000);
 #elif __linux__
