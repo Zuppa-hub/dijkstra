@@ -20,43 +20,45 @@ nel punto 3 se avete problemi a farlo subito per qualsiasi grafo iniziate magari
 
 //    cose da fare
 // partenza arrivo a lettere        - FATTO
-// percorso finale                  - NON FUNZIONA NULLA  cioè bisogna sistemare l'usita dal while, la cosa delgli esplorati non va 
+// percorso finale                  - DA FARE
 // sistemare stampe                 - FATTO, e come poi
 // sistemare commenti               - DA FARE
-// altri cammini possibili          - DA FARE MA NON SI SA COME 
+// altri cammini possibili          - DA FARE MA NON SI SA COME
 
+// libreirie generiche
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
 #include <locale.h>
 #include <limits.h>
+#include <string.h>
 
-// roba strana per includere le librerie dei rispettivi sistemi operativi
-#ifdef _WIN32
+#ifdef _WIN32 // se siamo su windows include le librerie specifiche per windows
 #include <windows.h>
-#elif __linux__
-#include <unistd.h>
-#include <sys/ioctl.h>
+#elif __linux__        // altrimenti per linux
+#include <unistd.h>    //sleep
+#include <sys/ioctl.h> //righe colonne
 #endif
 
-#define MAX ((int)(~0u >> 1u))
+#define MAX ((int)(~0u >> 1u)) // massimo valore che può immagazzinare una variabile di tipo intero
 
-void inizializza(size_t, size_t, int[*][*], int nodi); // Funzione di inizializzazione a MAX
-void default5(size_t, size_t, int[*][*]);              // Matrice di default a 5 nodi
-void default10(size_t, size_t, int[*][*]);             // Matrice di default a 10 nodi
-void custom(size_t, size_t, int[*][*]);                // matrice di default a nodi variabili contiene 7 nodi
-void pulisci();
-int detect();
-void splash(int righe); // restituisce il numero di colonne
-int scelta(int righe);  // scelta del grafo tra custom e default
-void inserimento(size_t, size_t, int pesi[*][*], int nodi, int flag, int righe);
-void outputWindows(size_t, size_t, int pesi[*][*], int nodi);
-void outputLinux(size_t, size_t, int pesi[*][*], int nodi);
+void inizializza(size_t, size_t, int[*][*], int nodi);                           // Funzione di inizializzazione a MAX
+void default5(size_t, size_t, int[*][*]);                                        // Matrice di default a 5 nodi
+void default10(size_t, size_t, int[*][*]);                                       // Matrice di default a 10 nodi
+void custom(size_t, size_t, int[*][*]);                                          // matrice di default a nodi variabili contiene 7 nodi
+void pulisci();                                                                  // pulisce lo schermo
+int detect();                                                                    // restituiisce il sistema operativo dove è in esecuzione il programma
+void splash(int righe);                                                          // restituisce il numero di colonne
+int scelta(int righe);                                                           // scelta del grafo tra custom e default
+void inserimento(size_t, size_t, int pesi[*][*], int nodi, int flag, int righe); // input
+void outputWindows(size_t, size_t, int pesi[*][*], int nodi);                    // output per windows, senza il simbolo dell'infinito, non supportato
+void outputLinux(size_t, size_t, int pesi[*][*], int nodi);                      // output per linux con il simbolo dell'infinito al posto di INF
 void output(size_t, int mat[*][*], int nodi);
 void dijkstra(size_t, size_t, int pesi[*][*], int nodi);
 int visitato(int visit[], int nodi, int arrivo);
 void stamparobe(int visit[], int costi[], int prec[], int nodi);
 int prendirighe();
+void percorso(int costi[], int dest, int part, int prec[], int nodi);
 
 int main()
 {
@@ -132,12 +134,11 @@ int main()
                     scanf("%d", &nodi);
                     if (nodi < 3)
                     {
-                        wprintf(L"%*s\nIl numero di nodi deve essere maggiore di 2\n", righe - 21, "");
+                        wprintf(L"\n%*sIl numero di nodi deve essere maggiore di 2\n", righe - 21, "");
                         cont++;
                         if (cont > 3)
                         {
-                            wprintf(L"Sbagliare e'umano, perseverare e' diabolico\n");
-                            break;
+                            wprintf(L"%*sSbagliare e' umano, perseverare e' diabolico\n", righe - 20, "");
                         }
                     }
                 } while (nodi < 3);
@@ -488,7 +489,7 @@ void dijkstra(size_t c, size_t r, int pesi[c][r], int nodi)
     int prec[nodi];  // vettori di predecessori
     int costi[nodi]; // vettori dei costi
     int visit[nodi]; // vettori di visitati
-    int i = 0;
+    int i = 0, j = 0;
     int Cmin; // costo minimo
     int prossimoNodo;
     int attuale = part;
@@ -501,6 +502,7 @@ void dijkstra(size_t c, size_t r, int pesi[c][r], int nodi)
             wprintf(L"\ninserire nodo di partenza: \nEs Nodo A");
             fflush(stdin);
             scanf("%s", Npart);
+            toupper(Npart[0]);
             part = Npart[0] - 65;
         }
         else
@@ -521,6 +523,7 @@ void dijkstra(size_t c, size_t r, int pesi[c][r], int nodi)
         {
             wprintf(L"\ninserire nodo di destinazione: \nEs Nodo C");
             scanf("%s", Ndest);
+            toupper(Ndest[0]);
             // fgets(Ndest, 1, stdin);
             dest = Ndest[0] - 65;
         }
@@ -550,14 +553,12 @@ void dijkstra(size_t c, size_t r, int pesi[c][r], int nodi)
         {
             prec[i] = -1;
         }
-
         visit[i] = 0;
     }
     visit[part] = 1;
 
     while (visitato(visit, nodi, dest) == 1)
     {
-        stamparobe(visit, costi, prec, nodi);
         Cmin = MAX;
         for (i = 0; i < nodi; i++)
         {
@@ -567,13 +568,12 @@ void dijkstra(size_t c, size_t r, int pesi[c][r], int nodi)
                 attuale = i;
                 cont = 0;
             }
-            else if (Cmin == MAX && i != dest)
+            else if (Cmin == MAX && visit[i] == 0 && i != dest)
             {
                 attuale = i;
                 cont = 1;
             }
         }
-
         if (cont == 1)
         {
             visit[attuale] = 1;
@@ -593,8 +593,37 @@ void dijkstra(size_t c, size_t r, int pesi[c][r], int nodi)
             }
             visit[attuale] = 1;
         }
+        // stamparobe(visit, costi, prec, nodi);
     }
-    printf("\n\n\n\n\n\tCosto finale : %d", costi[dest]);
+    percorso(costi, dest, part, prec, nodi);
+}
+void percorso(int costi[], int dest, int part, int prec[], int nodi)
+{
+    int percorso[nodi]; // vettore del percorso minimo
+    int i = 0;
+    int j = 0;
+
+    if (costi[dest] == MAX)
+    {
+        wprintf(L"\nNon esiste un percorso tra i nodi inseriti");
+    }
+    else
+    {
+        wprintf(L"\nIl percorso minimo e' di %d", costi[dest]);
+        wprintf(L"\nIl percorso e': ");
+        for (i = dest; prec[i] != -1; i = prec[i]) // risale il percorso al contrario
+        {
+            percorso[j] = i;
+            j++;
+        }
+        wprintf(L"%c --> ", part + 65);
+        for (j = j - 1; j > 0; j--)
+        {
+            wprintf(L"%c --> ", percorso[j] + 65);
+        }
+        j = 0;
+        wprintf(L"%c", percorso[j] + 65);
+    }
 }
 void inizializza(size_t c, size_t r, int matrice[c][r], int nodi)
 {
@@ -636,7 +665,6 @@ void splash(int righe)
     wprintf(L"%*s| |'_ \\ / _ \\ '_ \\ \\ / / _ \\ '_ \\| | | | __/ _ \\ \n", righe, "");
     wprintf(L"%*s| |_) |  __/ | | \\ V /  __/ | | | |_| | || (_) |\n", righe, "");
     wprintf(L"%*s|_.__/ \\___|_| |_|\\_/ \\___|_| |_|\\__,_|\\__\\___/ \n", righe, "");
-    wprintf(L"%*sImpementazione dell'algoritmo di dijkstra\n", righe + 3, "");
 #ifdef _WIN32
     Sleep(3000);
 #elif __linux__
