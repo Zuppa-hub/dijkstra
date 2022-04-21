@@ -73,6 +73,7 @@ int main()
     size_t DIM; // dimensione matrice
     do
     {
+        righe = prendirighe();
         wprintf(L"%*s --- DIJSKTRA ---\n\n", righe - 9, "");
         wprintf(L"%*s1) Grafo a 5 nodi\n%*s2) Grafo a 10 nodi\n%*s3) Grafo a nodi variabili\n%*s?) Premi qualsiasi altro numero per uscire\n\n\n", righe - 9, "", righe - 9, "", righe - 12, "", righe - 21, "");
         wprintf(L"%*sOpzione: ", righe - 5, "");
