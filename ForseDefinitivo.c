@@ -18,16 +18,6 @@ n.b. fare gli opportuni controlli sui dati inseriti dagli utenti
 nel punto 3 se avete problemi a farlo subito per qualsiasi grafo iniziate magari con meno nodi
 ****************************************************************/
 
-//    	cose da fare
-// partenza arrivo a lettere        - FATTO
-// percorso finale                  - FATTO
-// modifica dati					- FATTO
-// sistemare stampe                 - FATTO, e come poi
-// sistemare commenti               - FATTO
-// altri cammini possibili          - DA FARE, lo faremo mai?
-// sistemare lettere                - FATTO
-// scrittura su file                - FATTO
-
 // librerie generiche
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +37,6 @@ nel punto 3 se avete problemi a farlo subito per qualsiasi grafo iniziate magari
 #elif __linux__        // altrimenti librerie specifiche per linux
 #include <unistd.h>    //sleep
 #include <sys/ioctl.h> //righe colonne
-#include <unistd.h>
 #endif
 #define MAX ((int)(~0u >> 1u)) // massimo valore che pu� immagazzinare una variabile di tipo intero
 
@@ -67,7 +56,6 @@ void outputLinux(size_t, size_t, int pesi[*][*], int nodi);                     
 void output(size_t, int mat[*][*], int nodi);                                                                                 // stampa della matrice
 void dijkstra(FILE *fp, size_t, size_t, int pesi[*][*], int nodi);                                                            // calcolo
 int visitato(int visit[], int nodi, int arrivo);                                                                              // controllo se tutti i nodi sono visitati
-void stamparobe(int visit[], int costi[], int prec[], int nodi);                                                              // stampa tutti i vettori (prec, costi, visit)
 int prendirighe();                                                                                                            // trova la dimensione della finestra per adattare la stampa
 int percorso(int Vpercorso[], int costi[], int dest, int part, int prec[], int nodi);                                         // risale il percorso e lo stampa
 void modifica(size_t, size_t, int pesi[*][*], int nodi, int flag);                                                            // modifica i dati di una matrice
@@ -341,7 +329,12 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag, int rig
     int k, y; // indici per i cicli secondari
     int orient, scelta1, scelta;
     int cont = 0;
-    int lettere = 65; // per lka stampa a lettere se possibile
+    int lettere = 65;   // per lka stampa a lettere se possibile
+    int metodo;         // per utilizzare uno dei due metodi di input
+    int continuare = 0; // per il ciclo di conferma se ci sono altri nodi
+    int p, d;           // per la scelta del peso
+    char part[1];       // per le lettere
+    char dest[1];
     fflush(stdout);
     fflush(stdin);
     if (flag == 1) // flag passata tramite parametro, chiedo se è oruientato solo nella terza opzione
@@ -356,257 +349,327 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag, int rig
     {
         orient = 1; // nella prima e seconda il grafo è orientato
     }
-    switch (orient)
+    do
     {
-    case 1: // input orientato
-        for (i = 0; i < nodi; i++)
+        wprintf(L"%*sDigita 1 per utilizzare il metodo di input tradizione, dove viene chiesto il collegamento per ogni nodo\n%*sDigita 2 per digitare solo i nodi collegati(da cambiare l'input riga 347)", righe - 5, "", righe - 5, "");
+        scanf("%d", &metodo);
+    } while (metodo != 1 && metodo != 2);
+    if (metodo == 1)
+    {
+        switch (orient)
         {
-            for (j = 0; j < nodi; j++)
+        case 1: // input orientato
+            for (i = 0; i < nodi; i++)
             {
-                if (i != j)
+                for (j = 0; j < nodi; j++)
                 {
-                    if (nodi < 26) // stampa a lettere solo se ci sono abbastanza lettere
+                    if (i != j)
                     {
-                        do
-                        {
-                            wprintf(L"%*sil nodo %c e' collegato al nodo %c\n%*s1) SI\n%*s2) NO)\n", righe - 17, "", 65 + i, 65 + j, righe - 1, "", righe - 1, "");
-                            scanf("%d", &scelta1);
-                        } while (scelta1 != 1 && scelta1 != 2);
-                        if (scelta1 == 1)
-                        {
-                            do
-                            {
-                                wprintf(L"%*sinserire peso tra %c e %c: ", righe - 12, "", 65 + i, 65 + j);
-                                scanf("%d", &pesi[i][j]);
-                            } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
-                        }
-                    }
-                    else
-                    {
-                        do
-                        {
-                            wprintf(L"%*sil nodo %d e' collegato al nodo %d\n%*s1) SI\n%*s2) NO)\n", righe - 17, "", i, j, righe - 1, "", righe - 1, "");
-                            scanf("%d", &scelta1);
-                        } while (scelta1 != 1 && scelta1 != 2);
-                        if (scelta1 == 1)
-                        {
-                            do
-                            {
-                                wprintf(L"%*sinserire peso tra il nodo %d e il nodo %d: ", righe - 12, "", i, j);
-                                scanf("%d", &pesi[i][j]);
-                            } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
-                        }
-                    }
-                }
-            }
-            // output tabellare
-            pulisci();
-            wprintf(L"\\");
-            if (nodi < 26)
-            {
-                for (cont = 0; cont < nodi; cont++) // stampo le lettere in orizzontale in base ai nodi
-                {
-                    wprintf(L"\t%c", 65 + cont);
-                }
-                lettere = 65;
-                for (k = 0; k <= i; k++) // righe
-                {
-                    wprintf(L"\n");
-                    wprintf(L"%c", lettere);
-                    lettere++;
-                    for (y = 0; y < nodi; y++) // colonne
-                    {
-                        if (pesi[k][y] == MAX)
-                        {
-                            if (detect() == 0) // stampo o inf o infinitito a seconda del sistema operativo
-                            {
-                                wprintf(L"\tINF");
-                            }
-                            else if (detect() == 1)
-                            {
-                                wprintf(L"\t%lc", 8734);
-                            }
-                        }
-                        else
-                        {
-                            wprintf(L"\t%d", pesi[k][y]);
-                        }
-                    }
-                    wprintf(L"\n");
-                }
-            }
-            else
-            {
-                for (cont = 0; cont < nodi; cont++) // stmpo a numeri se i nuodi sono più id 26
-                {
-                    wprintf(L"\t%d", cont);
-                }
-                cont = 0;
-                for (k = 0; k <= i; k++) // righe
-                {
-                    wprintf(L"\n");
-                    wprintf(L"%d", cont);
-                    cont++;
-                    for (y = 0; y < nodi; y++) // colonne
-                    {
-                        if (pesi[k][y] == MAX)
-                        {
-                            if (detect() == 0)
-                            {
-                                wprintf(L"\tINF");
-                            }
-                            else if (detect() == 1)
-                            {
-                                wprintf(L"\t%lc", 8734);
-                            }
-                        }
-                        else
-                        {
-                            wprintf(L"\t%d", pesi[k][y]);
-                        }
-                    }
-                    wprintf(L"\n");
-                }
-            }
-        }
-        break;
-    case 2:
-        for (i = 0; i < nodi; i++) // input non orientato
-        {
-            for (j = 0; j < nodi; j++)
-            {
-                if (i != j)
-                {
-                    if (pesi[i][j] == MAX)
-                    {
-                        if (nodi < 26) // lettere
+                        if (nodi < 26) // stampa a lettere solo se ci sono abbastanza lettere
                         {
                             do
                             {
                                 wprintf(L"%*sil nodo %c e' collegato al nodo %c\n%*s1) SI\n%*s2) NO)\n", righe - 17, "", 65 + i, 65 + j, righe - 1, "", righe - 1, "");
-                                scanf("%d", &scelta);
-                                if (scelta == 1)
+                                scanf("%d", &scelta1);
+                            } while (scelta1 != 1 && scelta1 != 2);
+                            if (scelta1 == 1)
+                            {
+                                do
                                 {
-                                    do // controllO
-                                    {
-                                        wprintf(L"%*sinserire peso tra %c e %c: ", righe - 12, "", 65 + i, 65 + j);
-                                        scanf("%d", &pesi[i][j]);
-                                    } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
-                                }
-                                else
-                                {
-                                    pesi[i][j] = 9998; // se non si vuole collegare il nodo allora il peso è infinito ma non andrà richiesto essedo il grafo non orientato
-                                }                      // quindi temporaneamente sarà 9998, ma poi sarà portao a MAX
-                                pesi[j][i] = pesi[i][j];
-                            } while (scelta < 1 || scelta > 2); // controllo
+                                    wprintf(L"%*sinserire peso tra %c e %c: ", righe - 12, "", 65 + i, 65 + j);
+                                    scanf("%d", &pesi[i][j]);
+                                } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
+                            }
                         }
-                        else // numeri
+                        else
                         {
                             do
                             {
                                 wprintf(L"%*sil nodo %d e' collegato al nodo %d\n%*s1) SI\n%*s2) NO)\n", righe - 17, "", i, j, righe - 1, "", righe - 1, "");
-                                scanf("%d", &scelta);
-                                if (scelta == 1)
+                                scanf("%d", &scelta1);
+                            } while (scelta1 != 1 && scelta1 != 2);
+                            if (scelta1 == 1)
+                            {
+                                do
                                 {
-                                    do
-                                    {
-                                        wprintf(L"%*sinserire peso tra il nodo %d e il nodo %d: ", righe - 12, "", i, j);
-                                        scanf("%d", &pesi[i][j]);
-                                    } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
-                                }
-                                else
-                                {
-                                    pesi[i][j] = 9998;
-                                }
-                                pesi[j][i] = pesi[i][j];
-                            } while (scelta < 1 || scelta > 2);
+                                    wprintf(L"%*sinserire peso tra il nodo %d e il nodo %d: ", righe - 12, "", i, j);
+                                    scanf("%d", &pesi[i][j]);
+                                } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
+                            }
                         }
+                    }
+                }
+                // output tabellare
+                pulisci();
+                wprintf(L"\\");
+                if (nodi < 26)
+                {
+                    for (cont = 0; cont < nodi; cont++) // stampo le lettere in orizzontale in base ai nodi
+                    {
+                        wprintf(L"\t%c", 65 + cont);
+                    }
+                    lettere = 65;
+                    for (k = 0; k <= i; k++) // righe
+                    {
+                        wprintf(L"\n");
+                        wprintf(L"%c", lettere);
+                        lettere++;
+                        for (y = 0; y < nodi; y++) // colonne
+                        {
+                            if (pesi[k][y] == MAX)
+                            {
+                                if (detect() == 0) // stampo o inf o infinitito a seconda del sistema operativo
+                                {
+                                    wprintf(L"\tINF");
+                                }
+                                else if (detect() == 1)
+                                {
+                                    wprintf(L"\t%lc", 8734);
+                                }
+                            }
+                            else
+                            {
+                                wprintf(L"\t%d", pesi[k][y]);
+                            }
+                        }
+                        wprintf(L"\n");
+                    }
+                }
+                else
+                {
+                    for (cont = 0; cont < nodi; cont++) // stmpo a numeri se i nuodi sono più id 26
+                    {
+                        wprintf(L"\t%d", cont);
+                    }
+                    cont = 0;
+                    for (k = 0; k <= i; k++) // righe
+                    {
+                        wprintf(L"\n");
+                        wprintf(L"%d", cont);
+                        cont++;
+                        for (y = 0; y < nodi; y++) // colonne
+                        {
+                            if (pesi[k][y] == MAX)
+                            {
+                                if (detect() == 0)
+                                {
+                                    wprintf(L"\tINF");
+                                }
+                                else if (detect() == 1)
+                                {
+                                    wprintf(L"\t%lc", 8734);
+                                }
+                            }
+                            else
+                            {
+                                wprintf(L"\t%d", pesi[k][y]);
+                            }
+                        }
+                        wprintf(L"\n");
                     }
                 }
             }
-            // output tabellare, stesso ragionamneto precente
-            pulisci();
-            wprintf(L"\\");
-            if (nodi < 26)
+            break;
+        case 2:
+            for (i = 0; i < nodi; i++) // input non orientato
             {
-                for (cont = 0; cont < nodi; cont++)
+                for (j = 0; j < nodi; j++)
                 {
-                    wprintf(L"\t%c", 65 + cont);
-                }
-                lettere = 65;
-                for (k = 0; k <= i; k++) // righe
-                {
-                    wprintf(L"\n");
-                    wprintf(L"%c", lettere);
-                    lettere++;
-                    for (y = 0; y < nodi; y++) // colonne
+                    if (i != j)
                     {
-                        if (pesi[k][y] == MAX || pesi[k][y] == 9998)
+                        if (pesi[i][j] == MAX)
                         {
-                            if (detect() == 0)
+                            if (nodi < 26) // lettere
                             {
-                                wprintf(L"\tINF");
+                                do
+                                {
+                                    wprintf(L"%*sil nodo %c e' collegato al nodo %c\n%*s1) SI\n%*s2) NO)\n", righe - 17, "", 65 + i, 65 + j, righe - 1, "", righe - 1, "");
+                                    scanf("%d", &scelta);
+                                    if (scelta == 1)
+                                    {
+                                        do // controllO
+                                        {
+                                            wprintf(L"%*sinserire peso tra %c e %c: ", righe - 12, "", 65 + i, 65 + j);
+                                            scanf("%d", &pesi[i][j]);
+                                        } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
+                                    }
+                                    else
+                                    {
+                                        pesi[i][j] = 9998; // se non si vuole collegare il nodo allora il peso è infinito ma non andrà richiesto essedo il grafo non orientato
+                                    }                      // quindi temporaneamente sarà 9998, ma poi sarà portao a MAX
+                                    pesi[j][i] = pesi[i][j];
+                                } while (scelta < 1 || scelta > 2); // controllo
                             }
-                            else if (detect() == 1)
+                            else // numeri
                             {
-                                wprintf(L"\t%lc", 8734);
+                                do
+                                {
+                                    wprintf(L"%*sil nodo %d e' collegato al nodo %d\n%*s1) SI\n%*s2) NO)\n", righe - 17, "", i, j, righe - 1, "", righe - 1, "");
+                                    scanf("%d", &scelta);
+                                    if (scelta == 1)
+                                    {
+                                        do
+                                        {
+                                            wprintf(L"%*sinserire peso tra il nodo %d e il nodo %d: ", righe - 12, "", i, j);
+                                            scanf("%d", &pesi[i][j]);
+                                        } while (pesi[i][j] < 1); // i pesi inseriti devono essere positivi e diversi da 0
+                                    }
+                                    else
+                                    {
+                                        pesi[i][j] = 9998;
+                                    }
+                                    pesi[j][i] = pesi[i][j];
+                                } while (scelta < 1 || scelta > 2);
                             }
-                        }
-                        else
-                        {
-                            wprintf(L"\t%d", pesi[k][y]);
                         }
                     }
-                    wprintf(L"\n");
                 }
+                // output tabellare, stesso ragionamneto precente
+                pulisci();
+                wprintf(L"\\");
+                if (nodi < 26)
+                {
+                    for (cont = 0; cont < nodi; cont++)
+                    {
+                        wprintf(L"\t%c", 65 + cont);
+                    }
+                    lettere = 65;
+                    for (k = 0; k <= i; k++) // righe
+                    {
+                        wprintf(L"\n");
+                        wprintf(L"%c", lettere);
+                        lettere++;
+                        for (y = 0; y < nodi; y++) // colonne
+                        {
+                            if (pesi[k][y] == MAX || pesi[k][y] == 9998)
+                            {
+                                if (detect() == 0)
+                                {
+                                    wprintf(L"\tINF");
+                                }
+                                else if (detect() == 1)
+                                {
+                                    wprintf(L"\t%lc", 8734);
+                                }
+                            }
+                            else
+                            {
+                                wprintf(L"\t%d", pesi[k][y]);
+                            }
+                        }
+                        wprintf(L"\n");
+                    }
+                }
+                else
+                {
+                    for (cont = 0; cont < nodi; cont++)
+                    {
+                        wprintf(L"\t%d", cont);
+                    }
+                    cont = 0;
+                    for (k = 0; k <= i; k++) // righe
+                    {
+                        wprintf(L"\n");
+                        wprintf(L"%d", cont);
+                        cont++;
+                        for (y = 0; y < nodi; y++) // colonne
+                        {
+                            if (pesi[k][y] == MAX || pesi[k][y] == 9998)
+                            {
+                                if (detect() == 0)
+                                {
+                                    wprintf(L"\tINF");
+                                }
+                                else if (detect() == 1)
+                                {
+                                    wprintf(L"\t%lc", 8734);
+                                }
+                            }
+                            else
+                            {
+                                wprintf(L"\t%d", pesi[k][y]);
+                            }
+                        }
+                        wprintf(L"\n");
+                    }
+                }
+            }
+            for (i = 0; i < nodi; i++) // riportiamo a max sul grafo non orientato i nodi che hanno 9998
+            {
+                for (j = 0; j < nodi; j++)
+                {
+                    if (pesi[i][j] == 9998)
+                    {
+                        pesi[i][j] = MAX;
+                    }
+                }
+            }
+            break;
+        }
+        modifica(c, r, pesi, nodi, orient); // se si vuole modificare qualcosa nella matrice
+    }
+    else
+    {
+        do
+        {
+            if (nodi < 26)
+            {
+                // input a lettere portandole maiuscole
+                wprintf(L"\nDigita il nodo di partenza (Es. A): ");
+                scanf("%s", part);
+                part[0] = toupper(part[0]);
+                p = part[0] - 65;
+                wprintf(L"\nNodo di arrivo (Es B): ");
+                scanf("%s", dest);
+                dest[0] = toupper(dest[0]);
+                d = dest[0] - 65; // convertiamo a numero
+            }
+            else // numeri
+            {
+                wprintf(L"\nDigita il nodo odo di partenza (Es. 0): ");
+                scanf("%d", &p);
+                wprintf(L"\nNodo di arrivo (Es 1): ");
+                scanf("%d", &d);
+            }
+            if (p == d) // controllo
+            {
+                wprintf(L"\n\nErrore - Hai inserito lo stesso nodo\n\n");
+            }
+            else if (p > nodi || d > nodi)
+            {
+                wprintf(L"Impossibile impostare l'arco selezionato\n");
             }
             else
             {
-                for (cont = 0; cont < nodi; cont++)
+                if (pesi[p][d] != MAX)
                 {
-                    wprintf(L"\t%d", cont);
+                    wprintf(L"Il peso per questo arco e' gia'stato definito, dopo aver isnerito tutti gli archi potrai modificare i loro valori oppure eliminarli.");
                 }
-                cont = 0;
-                for (k = 0; k <= i; k++) // righe
+                else
                 {
-                    wprintf(L"\n");
-                    wprintf(L"%d", cont);
-                    cont++;
-                    for (y = 0; y < nodi; y++) // colonne
+                    wprintf(L"\n\nInserisci il valore: ");
+                    scanf("%d", &pesi[p][d]);
+                    if (orient == 2)
                     {
-                        if (pesi[k][y] == MAX || pesi[k][y] == 9998)
-                        {
-                            if (detect() == 0)
-                            {
-                                wprintf(L"\tINF");
-                            }
-                            else if (detect() == 1)
-                            {
-                                wprintf(L"\t%lc", 8734);
-                            }
-                        }
-                        else
-                        {
-                            wprintf(L"\t%d", pesi[k][y]);
-                        }
+                        pesi[d][p] = pesi[p][d];
+                        cont ++;
                     }
-                    wprintf(L"\n");
                 }
             }
-        }
-        for (i = 0; i < nodi; i++) // riportiamo a max sul grafo non orientato i nodi che hanno 9998
-        {
-            for (j = 0; j < nodi; j++)
+            if (cont > 0)
             {
-                if (pesi[i][j] == 9998)
-                {
-                    pesi[i][j] = MAX;
-                }
+                wprintf(L"\nVuoi inserire un altro valore?\nDigita 0 per inserire\nDigita 1 per terminare l'inseriemnto\n");
+                scanf("%d", &continuare);
             }
-        }
-        break;
+            cont++;
+            if (cont >= nodi)
+            {
+                printf("Hai inserito tutti i nodi");
+                continaure = 1;
+            }
+            
+        } while (continuare == 0);
     }
-    modifica(c, r, pesi, nodi, orient); // se si vuole modificare qualcosa nella matrice
 }
 void dijkstra(FILE *fp, size_t c, size_t r, int pesi[c][r], int nodi)
 {
@@ -622,125 +685,136 @@ void dijkstra(FILE *fp, size_t c, size_t r, int pesi[c][r], int nodi)
     int cont = 0;
     char Npart[1], Ndest[1];
     int scelta;
+    int flag = 0; // flag per controllare se il primo percorso è stato calcolato
     int CminFILE; // costo minimo da stmpare nel file
-    do            // input con relatrivi controlli per la partenza e l'arrivo
-    {
-        if (nodi < 26) // input a lettere
-        {
-            wprintf(L"\ninserire nodo di partenza: \n(Es: A): ");
-            fflush(stdin);
-            scanf("%s", Npart);
-            Npart[0] = toupper(Npart[0]); // se inseriamo una lettera minuscola diventa grande
-            part = Npart[0] - 65;         // convertiamo la lettera in un numero
-        }
-        else // numeri
-        {
-            wprintf(L"\nInserisci il nodo di partenza \n(Es: 0): ");
-            fflush(stdin);
-            scanf("%d", &part);
-        }
-        if (part < 0 || part > nodi)
-        {
-            wprintf(L"\nNodo non valido");
-        }
-    } while (part < 0 || part > nodi); // la partenza non puo' essere minore di 0 o maggiore dei nodi
-    fflush(stdin);
-    // input della destinazione, stella logica della partenza
     do
     {
-        if (nodi < 26) // input partyenza
+        do // input con relatrivi controlli per la partenza e l'arrivo
         {
-            wprintf(L"\ninserire nodo di destinazione: \n(Es: C): ");
-            scanf("%s", Ndest);
-            Ndest[0] = toupper(Ndest[0]);
-            dest = Ndest[0] - 65;
-        }
-        else
-        {
-            wprintf(L"\nInserisci il nodo di destinazione \n(Es: 2, Il primo nodo e' 0 ): ");
-            scanf("%d", &dest);
-        }
-        if (dest < 0 || dest >= nodi)
-        {
-            wprintf(L"\nNodo non valido");
-        }
-    } while (dest < 0 || dest >= nodi);
-    if (part == dest) // controllo
-    {
-        wprintf(L"\nIl nodo di partenza e di arrivo coincidono");
-        return;
-    }
-    for (i = 0; i < nodi; i++) // inizializzazione vettore costi precedenti e visitati
-    {
-        costi[i] = pesi[part][i];
-        if (costi[i] != MAX) // se ci sono collegamenti
-        {
-            prec[i] = part;
-        }
-        else
-        {
-            prec[i] = -1;
-        }
-        visit[i] = 0;
-    }
-    visit[part] = 1;                         // la partenza sarà sempre visitata
-    while (visitato(visit, nodi, dest) == 1) // finche non visiamo tutti i nodi continuaimo ad esplorare
-    {
-        Cmin = MAX;                // il costo minimo iniziale è infinito
-        for (i = 0; i < nodi; i++) // per il numero di nodi nel grafo
-        {
-            if (costi[i] < Cmin && visit[i] == 0 && i != dest) // se abbiamo un nodo che non sia la destinazione, non è visitato e il costo minimo è minore di quello attuale sostituiamo il costo minimo con quello attuale e il nodo attuale diventerà il prossimo
+            if (nodi < 26) // input a lettere
             {
-                Cmin = costi[i];
-                attuale = i;
-                cont = 0;
+                wprintf(L"\ninserire nodo di partenza: \n(Es: A): ");
+                fflush(stdin);
+                scanf("%s", Npart);
+                Npart[0] = toupper(Npart[0]); // se inseriamo una lettera minuscola diventa grande
+                part = Npart[0] - 65;         // convertiamo la lettera in un numero
             }
-            else if (Cmin == MAX && visit[i] == 0 && i != dest) // SE il nodo non è esplorabile non aggiorniamo il costo e lo segmamo come visitato
+            else // numeri
             {
-                attuale = i;
-                cont = 1;
+                wprintf(L"\nInserisci il nodo di partenza \n(Es: 0): ");
+                fflush(stdin);
+                scanf("%d", &part);
             }
-        }
-        if (cont == 1) // segmamo come visitato
-        {
-            visit[attuale] = 1;
-        }
-        else
-        {
-            for (i = 0; i < nodi; i++)
+            if (part < 0 || part > nodi)
             {
-                if (pesi[attuale][i] != MAX && visit[i] == 0) // se non è visitato e se possiamo arrivarci
+                wprintf(L"\nNodo non valido");
+            }
+        } while (part < 0 || part > nodi); // la partenza non puo' essere minore di 0 o maggiore dei nodi
+        fflush(stdin);
+        // input della destinazione, stella logica della partenza
+        do
+        {
+            if (nodi < 26) // input partyenza
+            {
+                wprintf(L"\ninserire nodo di destinazione: \n(Es: C): ");
+                scanf("%s", Ndest);
+                Ndest[0] = toupper(Ndest[0]);
+                dest = Ndest[0] - 65;
+            }
+            else
+            {
+                wprintf(L"\nInserisci il nodo di destinazione \n(Es: 2, Il primo nodo e' 0 ): ");
+                scanf("%d", &dest);
+            }
+            if (dest < 0 || dest >= nodi)
+            {
+                wprintf(L"\nNodo non valido");
+            }
+        } while (dest < 0 || dest >= nodi);
+        if (part == dest) // controllo
+        {
+            wprintf(L"\nIl nodo di partenza e di arrivo coincidono");
+            return;
+        }
+        for (i = 0; i < nodi; i++) // inizializzazione vettore costi precedenti e visitati
+        {
+            costi[i] = pesi[part][i];
+            if (costi[i] != MAX) // se ci sono collegamenti
+            {
+                prec[i] = part;
+            }
+            else
+            {
+                prec[i] = -1;
+            }
+            visit[i] = 0;
+        }
+        visit[part] = 1;                         // la partenza sarà sempre visitata
+        while (visitato(visit, nodi, dest) == 1) // finche non visiamo tutti i nodi continuaimo ad esplorare
+        {
+            Cmin = MAX;                // il costo minimo iniziale è infinito
+            for (i = 0; i < nodi; i++) // per il numero di nodi nel grafo
+            {
+                if (costi[i] < Cmin && visit[i] == 0 && i != dest) // se abbiamo un nodo che non sia la destinazione, non è visitato e il costo minimo è minore di quello attuale sostituiamo il costo minimo con quello attuale e il nodo attuale diventerà il prossimo
                 {
-                    if (costi[attuale] + pesi[attuale][i] < costi[i]) // se conviene andare al nodo successivo
-                    {
-                        costi[i] = costi[attuale] + pesi[attuale][i]; // aggiorniamo il costo totale
-                        prec[i] = attuale;                            // riempiamo il vettore dei precedenti
-                    }
+                    Cmin = costi[i];
+                    attuale = i;
+                    cont = 0;
+                }
+                else if (Cmin == MAX && visit[i] == 0 && i != dest) // SE il nodo non è esplorabile non aggiorniamo il costo e lo segmamo come visitato
+                {
+                    attuale = i;
+                    cont = 1;
                 }
             }
-            visit[attuale] = 1; // nodo visitato, riempiamo il vettore dei visitati
+            if (cont == 1) // segmamo come visitato
+            {
+                visit[attuale] = 1;
+            }
+            else
+            {
+                for (i = 0; i < nodi; i++)
+                {
+                    if (pesi[attuale][i] != MAX && visit[i] == 0) // se non è visitato e se possiamo arrivarci
+                    {
+                        if (costi[attuale] + pesi[attuale][i] < costi[i]) // se conviene andare al nodo successivo
+                        {
+                            costi[i] = costi[attuale] + pesi[attuale][i]; // aggiorniamo il costo totale
+                            prec[i] = attuale;                            // riempiamo il vettore dei precedenti
+                        }
+                    }
+                }
+                visit[attuale] = 1; // nodo visitato, riempiamo il vettore dei visitati
+            }
         }
-        // stamparobe(visit, costi, prec, nodi);
-    }
-    int jFILE = percorso(Vpercorso, costi, dest, part, prec, nodi); // stampiamo il percorso restituendo la posizione di partenza del vettore percorso
-    if (jFILE != -1)
-    {
-        do // stampa su file domanda con relativi controlli
+        int jFILE = percorso(Vpercorso, costi, dest, part, prec, nodi); // stampiamo il percorso restituendo la posizione di partenza del vettore percorso
+        if (jFILE != -1)
         {
-            wprintf(L"\nVuoi stampare i risultati nel file?\n1) Si\n2) No\n");
-            scanf("%d", &scelta);
-        } while (scelta != 1 && scelta != 2);
-        if (scelta == 1)
-        {
-            CminFILE = costi[dest];
-            stampaFILE(fp, c, r, pesi, nodi, Vpercorso, part, jFILE, CminFILE, dest);
-            wprintf(L"\nFatto!\n");
+            do // stampa su file domanda con relativi controlli
+            {
+                wprintf(L"\nVuoi stampare i risultati nel file?\n1) Si\n2) No\n");
+                scanf("%d", &scelta);
+            } while (scelta != 1 && scelta != 2);
+            if (scelta == 1)
+            {
+                CminFILE = costi[dest];
+                stampaFILE(fp, c, r, pesi, nodi, Vpercorso, part, jFILE, CminFILE, dest);
+                wprintf(L"\nFatto!\n");
+            }
+            else
+            {
+                wprintf(L"\nNon stampero' nel file");
+            }
         }
-        else
+        wprintf(L"Vuoi calcolare un altro percorso utilizzando la stessa matrice?\nDigita 0 per calcolare un altro percorso con la stessa matrice \nDigita 1 per tornare al menu' principale digita 2 per modificare la matrice esistente e calcolare il percorso minimo");
+        scanf("%d", &flag);
+        if (flag == 2)
         {
-            wprintf(L"\nNon stampero' nel file");
+            modifica(c, r, pesi, nodi, 0);
+            flag = 0;
         }
-    }
+
+    } while (flag == 0);
 }
 int percorso(int Vpercorso[], int costi[], int dest, int part, int prec[], int nodi)
 {
@@ -1059,25 +1133,6 @@ int visitato(int visit[], int nodi, int arrivo) // controlla se tutti i nodi son
     if (cont == 1)
         return 1;
     return 0; // tutti esploarti
-}
-void stamparobe(int visit[], int costi[], int prec[], int nodi)
-{
-    int i;
-    wprintf(L"\n\n\nVisitati:");
-    for (i = 0; i < nodi; i++)
-    {
-        wprintf(L"\n%d", visit[i]);
-    }
-    wprintf(L"\n\n\nCosti:");
-    for (i = 0; i < nodi; i++)
-    {
-        wprintf(L"\n%d", costi[i]);
-    }
-    wprintf(L"\n\n\nPrec:");
-    for (i = 0; i < nodi; i++)
-    {
-        wprintf(L"\n%d", prec[i]);
-    }
 }
 void modifica(size_t c, size_t r, int pesi[c][r], int nodi, int flag) // consente di modificare archi del grafo una volta presi in input
 {
