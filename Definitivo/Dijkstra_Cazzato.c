@@ -77,7 +77,7 @@ int main()
     {
         righe = prendirighe(); // per centrare la scritta
         wprintf(L"%*s --- DIJSKTRA ---\n\n", righe - 9, "");
-        wprintf(L"%*sDigita 1 per il grafo a 5 nodi\n%*sDigita 2 per il grafo a 10 nodi\n%*sDigita 3 per il grafo a nodi variabili\n%*sPremi qualsiasi altro numero per uscire\n\n\n", righe - 9, "", righe - 9, "", righe - 12, "", righe - 21, "");
+        wprintf(L"%*s1) Grafo a 5 nodi\n%*s2) Grafo a 10 nodi\n%*s3) Grafo a nodi variabili\n%*s    Premi qualsiasi altro numero per uscire\n\n\n", righe - 9, "", righe - 9, "", righe - 12, "", righe - 21, "");
         wprintf(L"%*sOpzione: ", righe - 5, "");
         scanf("%d", &sceltaNODI);
         pulisci();
@@ -166,14 +166,18 @@ int main()
         }
         // fine di un iterazione del while, pulisco lo shcermo
         wprintf(L"\n");
-        if (detect() == 1) // system pouse per linux
+        pulisci();
+        if (sceltaNODI != 1 && sceltaNODI != 2 && sceltaNODI != 3)
         {
-            char tmp[0];
-            wprintf(L"%*sPremi un tasto per continuare...\n", righe - 16, "");
-            scanf("%s", tmp);
+            if (detect() == 1) // system pouse per linux
+            {
+                char tmp[0];
+                wprintf(L"%*sPremi un tasto per continuare...\n", righe - 16, "");
+                scanf("%s", tmp);
+            }
+            else // system pause nativo per windows
+                system("PAUSE");
         }
-        else // system pause nativo per windows
-            system("PAUSE");
         pulisci();
     } while (sceltaNODI > 0 && sceltaNODI < 4); // il ciclo termina quando si inserisono valori non compresi tra 1 e 3
 }
@@ -341,7 +345,7 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag, int rig
     {
         do
         {
-            wprintf(L"%*sil grafo e' orientato?\n%*sDigita 1 se SI\n %*sDigita 2 se NO\n", righe - 11, "", righe - 1, "", righe - 1, "");
+            wprintf(L"%*sil grafo e' orientato?\n%*sDigita 1 se SI\n%*sDigita 2 se NO\n", righe - 11, "", righe - 7, "", righe - 7, "");
             scanf("%d", &orient);
         } while (orient != 1 && orient != 2); // controllo input
     }
@@ -351,7 +355,7 @@ void inserimento(size_t c, size_t r, int pesi[c][r], int nodi, int flag, int rig
     }
     do
     {
-        wprintf(L"%*sDigita 1 per utilizzare il metodo di input tradizione, dove viene chiesto il collegamento per ogni nodo\n%*sDigita 2 per digitare solo i nodi collegati (347)", righe - 35, "", righe - 35, "");
+        wprintf(L"%*sDigita 1 per utilizzare il metodo di input tradizionale, dove viene chiesto il collegamento per ogni nodo\n%*sDigita 2 per digitare solo i nodi collegati con il relativo peso", righe - 27, "", righe - 21, "");
         scanf("%d", &metodo);
     } while (metodo != 1 && metodo != 2);
     if (metodo == 1)
